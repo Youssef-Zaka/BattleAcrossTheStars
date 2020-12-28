@@ -1,4 +1,3 @@
-
 .MODEL SMALL
 .STACK 100
 ;******  Data Segment ******
