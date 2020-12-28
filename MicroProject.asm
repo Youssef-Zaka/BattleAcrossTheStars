@@ -60,6 +60,7 @@ MAIN ENDP
     
    
 
+    GameMode ENDP
 
 	CLEAR_SCREEN PROC NEAR 				;procedure to clear the screen by restarting the video mode
 
