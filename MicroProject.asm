@@ -59,7 +59,7 @@ MAIN ENDP
     CALL CLEAR_SCREEN
     
    
-
+    RET
     GameMode ENDP
 
 	CLEAR_SCREEN PROC NEAR 				;procedure to clear the screen by restarting the video mode
