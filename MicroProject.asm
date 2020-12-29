@@ -2,12 +2,16 @@
 .STACK 100
 ;******  Data Segment ******
 .DATA
-BALL_ORIGINAL_X DW 0A0h				;X position of the ball at the beginning of tha game
-BALL_ORIGINAL_Y DW 64h 	
-
+BALL_ORIGINAL_X DW 0Ah				;X position of the ball at the beginning of tha game
+BALL_ORIGINAL_Y DW 16d 	
+player1wins   db      "Player one WON" , '$'
+player2wins   db      "Player two WON" , '$'
+winner Db ?
 GameLevel DB ?
 Player1Health DB ?
 Player2Health DB ?
+Player1Armour DB ?
+Player2Armour DB ?
 ChooseGameLvl DB "Please Choose Game Level (press 1, 2, or 3)",'$'
 lvl1 DB "Level 1",'$'
 lvl2 DB "Level 2",'$'
@@ -23,13 +27,13 @@ msg4	    db      "press ESC to exit", '$'
 
 msg0 db      "Thank you for playing our game, press any key to exit",0Dh,0Ah,09h, '$'
 WINDOW_WIDTH DW 140h				;the width of the window (320 pixels)
-WINDOW_HEIGHT DW 0C8h				;the height of the window (200 pixels)
+WINDOW_HEIGHT DW 150d				;the height of the window of accesiable gameing area(150 pixels)
 WINDOW_BOUNDS DW 6 					;variable used to check collisions early
 
 TIME_AUX DB 0 						;variable used when checking if the time has changed
 ;p1
-Bulletp11_X DW 0A0h				        ;current X position (column) of the first bulley
-Bulletp11_Y DW 64h 			        	;current Y position (line) of the first bullet
+Bulletp11_X DW 0Ah 			        ;current X position (column) of the first bulley
+Bulletp11_Y DW 16d 			        	;current Y position (line) of the first bullet
 Bulletp12_X DW 0Ah 						;current X position (column) of the second bulley 
 BulletP12_Y DW 0Ah 						;current Y position (line) of the second bullet
 ;p2
@@ -39,7 +43,7 @@ Bulletp22_X DW 0Ah 						;current X position (column) of the second bulley
 BulletP22_Y DW 0Ah 						;current Y position (line) of the second bullet
             
 BulletSize DW 08h					;size of the bullet (how many pixels does the ball have in width and height)
-Bullet_VELOCITY_X DW 06h 				;X (horizontal) velocity of the ball
+Bullet_VELOCITY_X DW 0Ah 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
 Bullet_VELOCITY_Y DW 02h				;Y (vertical) velocity of the ball
 
 PADDLE_LEFT_X DW 0Ah 				;current X position of the left paddle
@@ -51,6 +55,10 @@ PADDLE_RIGHT_Y DW 0Ah 				;current X position of the right paddle
 PADDLE_WIDTH DW 04h 				;default width of the paddle
 PADDLE_HEIGHT DW 1Fh				;default height of the paddle
 PADDLE_VELCITY DW 05h 				;default velocity of the paddle
+Player1H DB 'Health'
+EndPlayer1H Db ' '
+Player2H DB 'Armour'
+EndPlayer2H Db ' '
 
 
 .CODE 
@@ -77,6 +85,8 @@ MAIN ENDP
 		MOV TIME_AUX,DL 			;if not update time
 		CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode
 
+        CALL StatusBar
+
 		CALL MOVE_Bullet 				;calling the procedure to move the balls
 		CALL DrawBullets 				;calling the procedure to draw the ball
 
@@ -86,6 +96,149 @@ MAIN ENDP
 		JMP	CHECK_TIME 				;after everything check time again
     RET
     GameMode ENDP
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+StatusBar proc NEAR
+mov cx,0
+mov dx,WINDOW_HEIGHT
+mov al,5d
+mov ah,0ch
+Status:
+int 10h
+inc cx
+cmp cx,320
+jnz Status
+
+;;draw health left
+mov al, 1
+mov bh, 0
+mov bl,  00000010b
+mov cx, offset EndPlayer1H - offset Player1H ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh, 2d
+mov dl,0
+push DS
+pop es
+mov bp, offset Player1H
+mov ah, 13h
+int 10h
+;;draw p1 health
+mov al, 1
+mov bh, 0
+mov bl,  00000010b
+mov cx, 1 ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+mov dl,2
+push DS
+pop es
+mov bp, offset Player1Health
+mov ah, 13h
+int 10h
+
+;;draw health Right
+mov al, 1
+mov bh, 0
+mov bl,  00000010b
+mov cx, offset EndPlayer1H - offset Player1H ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh, 2d
+mov dl,33
+push DS
+pop es
+mov bp, offset Player1H
+mov ah, 13h
+int 10h
+
+;;draw p2 health
+mov al, 1
+mov bh, 0
+mov bl,  00000010b
+mov cx, 1 ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+mov dl,35
+push DS
+pop es
+mov bp, offset Player2Health
+mov ah, 13h
+int 10h
+; printing health left
+mov al, 1
+mov bh, 0
+mov bl,  00000001b
+mov cx, offset EndPlayer2H - offset Player2H ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh, 2d
+mov dl,8d
+push DS
+pop es
+mov bp, offset Player2H
+mov ah, 13h
+int 10h
+;;draw p1 Armour
+mov al, 1
+mov bh, 0
+mov bl,  00000001b
+mov cx, 1 ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+mov dl,8d
+push DS
+pop es
+mov bp, offset Player1Armour
+mov ah, 13h
+int 10h
+;printing armour left
+mov al, 1
+mov bh, 0
+mov bl,  00000001b
+mov cx, offset EndPlayer2H - offset Player2H ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh, 2d
+mov dl,25
+push DS
+pop es
+mov bp, offset Player2H
+mov ah, 13h
+int 10h
+;;draw p2 Armour
+mov al, 1
+mov bh, 0
+mov bl,  00000001b
+mov cx, 1 ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+mov dl,25d
+push DS
+pop es
+mov bp, offset Player2Armour
+mov ah, 13h
+int 10h
+
+mov al, 1
+mov bh, 0
+mov bl,  00000001b
+mov cx, offset EndPlayer2H - offset Player2H ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh, 2d
+mov dl,25
+push DS
+pop es
+mov bp, offset Player2H
+mov ah, 13h
+int 10h
+
+
+
+
+RET
+StatusBar ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ChooseLevel proc NEAR
     ;clear screen, blue pen grey background
@@ -139,11 +292,11 @@ MAIN ENDP
     mov ah,0
     int 16h
     CMP al , '1'
-    JE  LevelOne
+    JE  StartLVL1
     CMP al , '2'
-    JE  LevelTwo
+    JE  StartLVL2
     CMP al , '3'
-    JE  LevelThree
+    JE  StartLVL3
     JMP GetLevel
     StartLVL1: CALL LevelOne
     JMP ReturnLvlSelect
@@ -157,8 +310,10 @@ MAIN ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 LevelOne proc NEAR
 mov GameLevel,1d
-mov Player1Health,4d
-mov Player2Health,4d
+mov Player1Health,52d
+mov Player2Health,52d
+mov Player1Armour, 48d
+mov Player2Armour, 48d
 ;game speed
 
 RET
@@ -364,34 +519,54 @@ LevelThree ENDP
     DrawFighters ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DrawBullets proc NEAR
-        MOV CX,Bulletp11_X 					;set the initial column (X)
-		MOV DX,Bulletp11_Y 					;set the initial line (Y)
+;        MOV CX,Bulletp11_X 					;set the initial column (X)
+;		MOV DX,Bulletp11_Y 					;set the initial line (Y)
+;
+;		DRAW_BALL_HORIZONTAL:
+;			MOV AH,0Ch					;set the configuration to writing the pixel
+;			MOV AL,0Ch					;choose Red as color of the pixel
+;			MOV BH,00h					;set the page number
+;			INT 10h 					;execute the configuration
+;
+;			INC CX 						;CX = CX + 1
+;			MOV AX,CX					
+;			SUB AX,Bulletp11_X		
+;			CMP AX,BulletSize 			;CX - BALL_X > BALL_SIZE (Y-> We go to the next line. N-> we continue to the next column)
+;			JNG DRAW_BALL_HORIZONTAL
+ ;          	
+  ;          mov Ax,1
+   ;         add ax,Bulletp11_Y
+    ;        cmp DX,ax
+     ;       je retDrawBall
+      ;      inc DX
+	   ; 	mov cx,Bulletp11_X 		;the CX register goes back to the initial column
+		;	MOV AX,CX					
+		;	SUB AX,Bulletp11_X		
+		;	CMP AX,BulletSize 			;CX - BALL_X > BALL_SIZE (Y-> We go to the next line. N-> we continue to the next column)
+		;	JNG DRAW_BALL_HORIZONTAL
+ ;           retDrawBall:
+            mov ax, 0A000h      ; to graphics screen
+            mov es, ax  
 
-		DRAW_BALL_HORIZONTAL:
-			MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,0Ch					;choose Red as color of the pixel
-			MOV BH,00h					;set the page number
-			INT 10h 					;execute the configuration
-
-			INC CX 						;CX = CX + 1
-			MOV AX,CX					
-			SUB AX,Bulletp11_X		
-			CMP AX,BulletSize 			;CX - BALL_X > BALL_SIZE (Y-> We go to the next line. N-> we continue to the next column)
-			JNG DRAW_BALL_HORIZONTAL
-           	
-            mov Ax,1
-            add ax,Bulletp11_Y
-            cmp DX,ax
-            je retDrawBall
-            inc DX
-	    	mov cx,Bulletp11_X 		;the CX register goes back to the initial column
-			MOV AX,CX					
-			SUB AX,Bulletp11_X		
-			CMP AX,BulletSize 			;CX - BALL_X > BALL_SIZE (Y-> We go to the next line. N-> we continue to the next column)
-			JNG DRAW_BALL_HORIZONTAL
-
-            retDrawBall:
-    RET
+            MOV AX,Bulletp11_Y 					;set the initial column (X)
+           	MOV DX,Bulletp11_X					;set the initial line (Y)
+        	mov cx, 320d
+        	mul cx					;execute the configuration
+        	add ax,Bulletp11_X
+        	mov di, ax      ; (row*320+col)
+            mov Al,0CH
+            mov cx,BulletSize       
+            rep STOSB
+        	MOV AX,Bulletp11_Y
+        	mov cx, 320d
+        	mul cx					;execute the configuration
+        	add ax,Bulletp11_X
+        	add  ax,320
+        	mov di, ax
+        	mov Al,0CH
+        	mov cx,BulletSize 
+        	rep STOSB
+            RET
     DrawBullets ENDP
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     MOVE_Bullet PROC NEAR					;process the movemment of the bullet
@@ -433,26 +608,55 @@ LevelThree ENDP
 		;maxx1 > maxx2 && minx1 < maxx2 && maxy1 > miny2 && miny1 < maxy2
 		;BALL_X + BALL_SIZE > PADDLE_RIGHT_X && BALL_X < PADDLE_RIGHT_X + PADDLE_WIDTH 
 		;&& BALL_Y + BALL_SIZE > PADDLE_RIGHT_Y && BALL_Y < PADDLE_RIGHT_Y + PADDLE_HEIGHT
+		;
+		;minx1 < maxx2 && maxx1 > minx2 && maxy1 > miny2 && miny1 < maxy2
+		;BALL_X < PADDLE_LEFT_X + PADDLE_WIDTH && BALL_X +BALL_SIZE > PADDLE_LEFT_X
+		;&& BALL_Y + BALL_SIZE > PADDLE_LEFT_Y && BALL_Y < PADDLE_LEFT_Y + PADDLE_HEIGHT
 
+		MOV AX,PADDLE_RIGHT_X
+		sub AX,PADDLE_WIDTH
+		CMP Bulletp11_X,AX
+		JL CHECK_COLLISION_WITH_LEFT_PADDLE					;if there is no collision exit the procedure
+
+		
+		MOV AX,Bulletp11_Y
+		CMP AX,PADDLE_Right_Y
+		JNG CHECK_COLLISION_WITH_LEFT_PADDLE					;if there is no collision exit the procedure
+
+		MOV AX,PADDLE_Right_Y
+		ADD AX,PADDLE_HEIGHT
+		CMP Bulletp11_Y,AX
+		JG CHECK_COLLISION_WITH_LEFT_PADDLE					;if there is no collision exit the procedure
+
+		;if it reaches this point the ball is colliding with the right paddle
+		;
+        ;
+
+        Dec Player2Health
+		cmp Player2Health , 48d
+		je ENDGAME1
+		JMP RESET_POSITION
+
+		CHECK_COLLISION_WITH_LEFT_PADDLE:
 		MOV AX,Bulletp11_X
 		ADD AX,BulletSize
 		CMP AX,PADDLE_RIGHT_X
-		JNG CHECK_COLLISION_WITH_LEFT_PADDLE	;if there is no collision check for the left paddle
+		JNG EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
 
 		MOV AX,PADDLE_RIGHT_X
 		ADD AX,PADDLE_WIDTH
 		CMP Bulletp11_X,AX
-		JNL CHECK_COLLISION_WITH_LEFT_PADDLE	;if there is no collision check for the left paddle
+		JNL EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
 
 		MOV AX,Bulletp11_Y
 		ADD AX,BulletSize
 		CMP AX,PADDLE_RIGHT_Y
-		JNG CHECK_COLLISION_WITH_LEFT_PADDLE	;if there is no collision check for the left paddle
+		JNG EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
 
 		MOV AX,PADDLE_RIGHT_Y
 		ADD AX,PADDLE_HEIGHT
 		CMP Bulletp11_Y,AX
-		JNL CHECK_COLLISION_WITH_LEFT_PADDLE	;if there is no collision check for the left paddle
+		JNL EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
 
 		;if it reaches this point the ball is colliding with the right paddle
 
@@ -470,50 +674,87 @@ LevelThree ENDP
 
 			RET
 
-; 		Check if the bullet is colliding with left paddle
-		CHECK_COLLISION_WITH_LEFT_PADDLE:
-		;minx1 < maxx2 && maxx1 > minx2 && maxy1 > miny2 && miny1 < maxy2
-		;BALL_X < PADDLE_LEFT_X + PADDLE_WIDTH && BALL_X +BALL_SIZE > PADDLE_LEFT_X
-		;&& BALL_Y + BALL_SIZE > PADDLE_LEFT_Y && BALL_Y < PADDLE_LEFT_Y + PADDLE_HEIGHT
-
-		MOV AX,PADDLE_LEFT_X
-		ADD AX,PADDLE_WIDTH
-		CMP Bulletp21_X,AX
-		JNL EXIT_BALL_COLLISION					;if there is no collision exit the procedure
-
-		MOV AX,Bulletp21_X
-		ADD AX,BulletSize
-		CMP AX,PADDLE_LEFT_X
-		JNG EXIT_BALL_COLLISION					;if there is no collision exit the procedure
-
-		MOV AX,Bulletp21_Y
-		ADD AX,BulletSize
-		CMP AX,PADDLE_LEFT_Y
-		JNG EXIT_BALL_COLLISION					;if there is no collision exit the procedure
-
-		MOV AX,PADDLE_LEFT_Y
-		ADD AX,PADDLE_HEIGHT
-		CMP Bulletp21_Y,AX
-		JNL EXIT_BALL_COLLISION					;if there is no collision exit the procedure
-
-		;if it reaches this point the ball is colliding with the right paddle
-		;
-        ;
-        ;Dec Player 1 health
+		
         ;
         ;
-		RET 									;exit this procedure
-
+		;exit this procedure
+		ENDGAME1:
+		mov winner,1
+		Call PLAYERWINS
+		jmp EXIT_BALL_COLLISION
+		ENDGAM2E:
+		mov winner ,2
+		Call PLAYERWINS
 		EXIT_BALL_COLLISION:
 	    RET
 
 	MOVE_Bullet ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+PLAYERWINS PROC NEAR
+
+mov al, 03h
+	mov ah, 0
+	int 10h
+
+MOV AX,0600H                       
+    MOV BH,71H
+    MOV CX,0000H
+    MOV DX,184FH
+    INT 10H
+
+	 ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
+    MOV AH,02H
+    MOV BH,00
+    MOV DX,0817H   ; X axis = 17, Y = 8
+    INT 10H    
+
+	cmp winner,2
+	je TwoWon 
+	mov dx, Offset player1wins 
+	mov     ah, 09h
+	int     21h
+    ;set cursor location to middle of screen
+    MOV AH,02H
+    MOV BH,00
+    MOV DX,0D17H ; X axis = 17, Y = D
+    INT 10H   
+    ;print msg
+    mov dx, Offset PressEnter 
+	mov     ah, 09h
+	int     21h
+
+	GetInputWin:
+    mov     ah, 7  ;take input
+	int     21h        
+    cmp al,	0Dh
+    jne GetInputWin
+	Call MainMenu
+	TwoWon:
+	mov dx, Offset player2wins 
+	mov     ah, 09h
+	int     21h
+    ;set cursor location to middle of screen
+    MOV AH,02H
+    MOV BH,00
+    MOV DX,0D17H ; X axis = 17, Y = D
+    INT 10H   
+    ;print msg
+    mov dx, Offset PressEnter 
+	mov     ah, 09h
+	int     21h
+
+Returnwinner:
+
+RET
+PLAYERWINS ENDP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 RESET_Bullet_POSITION proc NEAR
-    MOV AX,BALL_ORIGINAL_X 			
+
+   		MOV AX,PADDLE_LEFT_X 			
 		MOV Bulletp11_X,AX 					;setting current X-coordinate of the ball to BALL_ORIGINAL_X
 
-		MOV AX,BALL_ORIGINAL_Y
+		MOV AX,PADDLE_LEFT_Y
+		add ax,16
 		MOV Bulletp11_Y,AX 					;setting current Y-coordinate of the ball to BALL_ORIGINAL_X
 
 
@@ -629,9 +870,13 @@ RESET_Bullet_POSITION ENDP
     REtGetPlayerName:
     RET
     GetPlayerName ENDP
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;Following procedure used to draw the main menu and ask user which mode to play
     MainMenu proc NEAR
+
+	mov al, 03h
+	mov ah, 0
+	int 10h
  ;Clear entire screen and set new grey background and new words will be blue
     MOV AX,0600H                       
     MOV BH,71H
