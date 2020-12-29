@@ -6,7 +6,7 @@ BALL_ORIGINAL_X DW 0Ah				;X position of the ball at the beginning of tha game
 BALL_ORIGINAL_Y DW 16d 	
 player1wins   db      "Player one WON" , '$'
 player2wins   db      "Player two WON" , '$'
-winner Db ?
+winner Db 0d
 GameLevel DB ?
 Player1Health DB ?
 Player2Health DB ?
@@ -66,7 +66,12 @@ EndPlayer2H Db ' '
 	MOV AX,@DATA 						;save on the AX register the contents of the DATA segment
 	MOV DS,AX                           ;save on the DS segment the contents of the AX
     CALL GetPlayerName
+	infLoop:
     CALL MainMenu
+	mov cx,3d
+	cmp cx,2d
+	JNE infLoop
+
     MOV AH,4CH          ;Inturupt is ended and control is back to the system 
     INT 21H
 MAIN ENDP
@@ -90,10 +95,14 @@ MAIN ENDP
 		CALL MOVE_Bullet 				;calling the procedure to move the balls
 		CALL DrawBullets 				;calling the procedure to draw the ball
 
+		cmp winner,0
+		jne ReturnToMainMenu
+
 		CALL Move_Fighters 			;move the paddles (check for key presses)
 		CALL DrawFighters 			;draw the paddles with the updated positions
 
 		JMP	CHECK_TIME 				;after everything check time again
+	ReturnToMainMenu:
     RET
     GameMode ENDP
 
@@ -723,12 +732,13 @@ MOV AX,0600H
 	mov     ah, 09h
 	int     21h
 
+
 	GetInputWin:
     mov     ah, 7  ;take input
 	int     21h        
     cmp al,	0Dh
     jne GetInputWin
-	Call MainMenu
+	jmp Returnwinner
 	TwoWon:
 	mov dx, Offset player2wins 
 	mov     ah, 09h
@@ -742,6 +752,11 @@ MOV AX,0600H
     mov dx, Offset PressEnter 
 	mov     ah, 09h
 	int     21h
+	GetInputWin2:
+    mov     ah, 7  ;take input
+	int     21h        
+    cmp al,	0Dh
+    jne GetInputWin2
 
 Returnwinner:
 
@@ -873,7 +888,7 @@ RESET_Bullet_POSITION ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;Following procedure used to draw the main menu and ask user which mode to play
     MainMenu proc NEAR
-
+	mov winner,0
 	mov al, 03h
 	mov ah, 0
 	int 10h
