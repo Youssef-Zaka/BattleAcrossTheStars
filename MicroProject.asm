@@ -175,14 +175,190 @@ RET
 LevelThree ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Move_Fighters proc NEAR
+        ;Left paddle movement
+		;check if any key is being pressed (if not check the other paddle)
+		MOV AH,01h
+		INT 16h
+		JZ CHECK_RIGHT_PADDLE_MOVEMENT 	;ZF=1, JZ -> Jump if zero
 
+		;check which key is being pressed (AL = ASCII Character)
+		MOV AH,00h
+		INT 16h
+
+		CMP     AL, 1Bh 							;check for 'Esc'
+		JZ      exit 								;Jump to exit if 'Esc' is pressed
+
+		;if it is 'w' or 'W' -> move up
+		CMP AL,77h 									;check for 'w'
+		JE MOVE_LEFT_PADDLE_UP
+		CMP AL,57h 									;check for 'W'
+		JE MOVE_LEFT_PADDLE_UP
+
+		;if it is 's' or 'S' -> move down
+		CMP AL,73h 									;check for 's'
+		JE MOVE_LEFT_PADDLE_DOWN
+		CMP AL,53h 									;check for 'S'
+		JE MOVE_LEFT_PADDLE_DOWN
+		JMP CHECK_RIGHT_PADDLE_MOVEMENT
+
+		MOVE_LEFT_PADDLE_UP: 						;procedure to move the left paddle up
+			MOV AX,PADDLE_VELCITY 				
+			SUB PADDLE_LEFT_Y,AX 					;subtracting the PADDLE_VELCITY in current position of the paddle
+
+			MOV AX,WINDOW_BOUNDS
+			CMP PADDLE_LEFT_Y,AX 					;checking if the paddle is at the top boundary
+			JL FIX_PADDLE_LEFT_TOP_POSITION 		;if it is at the top boundary then fix the position 
+			JMP CHECK_RIGHT_PADDLE_MOVEMENT
+
+			FIX_PADDLE_LEFT_TOP_POSITION:
+				MOV PADDLE_LEFT_Y,AX 				;fixing paddle top position to WINDOW_BOUNDS
+				JMP CHECK_RIGHT_PADDLE_MOVEMENT
+
+		MOVE_LEFT_PADDLE_DOWN: 						;procedure to move the left paddle down
+			MOV AX,PADDLE_VELCITY 					
+			ADD PADDLE_LEFT_Y,AX 					;adding the PADDLE_VELCITY in current position of the paddle
+			MOV AX,WINDOW_HEIGHT
+			SUB AX,WINDOW_BOUNDS
+			SUB AX,PADDLE_HEIGHT
+			CMP PADDLE_LEFT_Y,AX 					;checking if the paddle is at the bottom boundary
+			JG FIX_PADDLE_LEFT_BOTTOM_POSITION 		;if it is at the bottom boundary then fix the position 
+			JMP CHECK_RIGHT_PADDLE_MOVEMENT
+
+			FIX_PADDLE_LEFT_BOTTOM_POSITION:
+				MOV PADDLE_LEFT_Y,AX 				;fixing paddle top position
+				JMP CHECK_RIGHT_PADDLE_MOVEMENT
+
+		exit:
+			JMP EXIT_PADDLE_MOVEMENT 								;Jump to exit2
+
+		;Right paddle movement
+		CHECK_RIGHT_PADDLE_MOVEMENT:
+			;if it is 'o' or 'O' -> move up
+			CMP AL,6Fh 								;check for 'o'
+			JE MOVE_RIGHT_PADDLE_UP
+			CMP AL,4Fh 								;check for 'O'
+			JE MOVE_RIGHT_PADDLE_UP
+
+			;if it is 'l' or 'L' -> move down
+			CMP AL,6Ch 								;check for 'l'
+			JE MOVE_RIGHT_PADDLE_DOWN
+			CMP AL,4Ch 								;check for 'L'
+			JE MOVE_RIGHT_PADDLE_DOWN
+			JMP EXIT_PADDLE_MOVEMENT
+
+		MOVE_RIGHT_PADDLE_UP: 						;procedure to move the right paddle up
+			MOV AX,PADDLE_VELCITY 					
+			SUB PADDLE_RIGHT_Y,AX 					;subtracting the PADDLE_VELCITY in current position of the paddle
+
+			MOV AX,WINDOW_BOUNDS
+			CMP PADDLE_RIGHT_Y,AX 					;checking if the paddle is at the top boundary
+			JL FIX_PADDLE_RIGHT_TOP_POSITION  		;if it is at the top boundary then fix the position
+			JMP EXIT_PADDLE_MOVEMENT
+
+			FIX_PADDLE_RIGHT_TOP_POSITION:
+				MOV PADDLE_RIGHT_Y,AX 				;fix the postion of the paddle
+				JMP EXIT_PADDLE_MOVEMENT
+
+		MOVE_RIGHT_PADDLE_DOWN:
+			MOV AX,PADDLE_VELCITY
+			ADD PADDLE_RIGHT_Y,AX 					;adding the PADDLE_VELCITY in current position of the paddle	
+			MOV AX,WINDOW_HEIGHT
+			SUB AX,WINDOW_BOUNDS
+			SUB AX,PADDLE_HEIGHT
+			CMP PADDLE_RIGHT_Y,AX 					;checking if the paddle is at the bottom boundary
+			JG FIX_PADDLE_RIGHT_BOTTOM_POSITION 	;if it is at the bottom boundary then fix the position
+			JMP CHECK_RIGHT_PADDLE_MOVEMENT
+
+			FIX_PADDLE_RIGHT_BOTTOM_POSITION:
+				MOV PADDLE_RIGHT_Y,AX 				;fix the postion of the paddle
+				JMP EXIT_PADDLE_MOVEMENT
+
+		EXIT_PADDLE_MOVEMENT:
 
     RET
     Move_Fighters ENDP
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DrawFighters proc NEAR
+    	MOV CX,PADDLE_LEFT_X 			;set the initial column (X)
+		MOV DX,PADDLE_LEFT_Y 			;set the initial line (Y)
 
+		DRAW_PADDLE_LEFT_HORIZONTAL:
+			MOV AH,0Ch					;set the configuration to writing the pixel
+			MOV AL,0Fh					;choose white as color of the pixel
+			MOV BH,00h					;set the page number
+			INT 10h 					;execute the configuration
+
+			INC CX 						;CX = CX + 1
+			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			SUB AX,PADDLE_LEFT_X	
+			CMP AX,PADDLE_WIDTH
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL
+
+            inc dx
+            jmp HelperDraw
+            DRAW_PADDLE_LEFT_HORIZONTAL2:
+			MOV AH,0Ch					;set the configuration to writing the pixel
+			MOV AL,0Fh					;choose white as color of the pixel
+			MOV BH,00h					;set the page number
+			INT 10h 					;execute the configuration
+            HelperDraw:
+			INC CX 						;CX = CX + 1
+			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			SUB AX,PADDLE_LEFT_X
+            add ax,2d	
+			CMP AX,PADDLE_WIDTH
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL2
+            
+			MOV CX,PADDLE_LEFT_X 		;the CX register goes back to the initial column
+			INC DX 						;we advance one line
+			MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
+			SUB AX,PADDLE_LEFT_Y
+            add ax,2d					
+			CMP AX,PADDLE_HEIGHT
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL2
+
+            inc dx 
+            DRAW_PADDLE_LEFT_HORIZONTAL3:
+            
+            MOV AH,0Ch					;set the configuration to writing the pixel
+			MOV AL,0Fh					;choose white as color of the pixel
+			MOV BH,00h					;set the page number
+			INT 10h 
+            INC CX 						;CX = CX + 1
+			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			SUB AX,PADDLE_LEFT_X	
+			CMP AX,PADDLE_WIDTH
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL3		
+
+
+			MOV CX,PADDLE_RIGHT_X 		;set the initial column (X)
+			MOV DX,PADDLE_RIGHT_Y 		;set the initial line (Y)
+           
+		DRAW_PADDLE_RIGHT_HORIZONTAL:
+			MOV AH,0Ch					;set the configuration to writing the pixel
+			MOV AL,0Fh					;choose white as color of the pixel
+			MOV BH,00h					;set the page number
+			INT 10h 					;execute the configuration
+
+			INC CX 						;CX = CX + 1
+			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			SUB AX,PADDLE_RIGHT_X		
+			CMP AX,PADDLE_WIDTH
+			JNG DRAW_PADDLE_RIGHT_HORIZONTAL
+
+            inc dx
+            MOV AH,0Ch					;set the configuration to writing the pixel
+			MOV AL,0Fh					;choose white as color of the pixel
+			MOV BH,00h					;set the page number
+			INT 10h 	
+           
+			MOV CX,PADDLE_RIGHT_X 		;the CX register goes back to the initial column
+			INC DX 						;we advance one line
+			MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
+			SUB AX,PADDLE_RIGHT_Y					
+			CMP AX,PADDLE_HEIGHT
+			JNG DRAW_PADDLE_RIGHT_HORIZONTAL
 
     RET
     DrawFighters ENDP
