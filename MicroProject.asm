@@ -46,21 +46,61 @@ BulletSize DW 08h					;size of the bullet (how many pixels does the ball have in
 Bullet_VELOCITY_X DW 0Ah 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
 Bullet_VELOCITY_Y DW 02h				;Y (vertical) velocity of the ball
 
-PADDLE_LEFT_X DW 0Ah 				;current X position of the left paddle
+PADDLE_LEFT_X DW 0d				;current X position of the left paddle
 PADDLE_LEFT_Y DW 0Ah 				;current Y position of the left paddle
 
-PADDLE_RIGHT_X DW 130h 				;current X position of the right paddle
+PADDLE_RIGHT_X DW 280d 				;current X position of the right paddle
 PADDLE_RIGHT_Y DW 0Ah 				;current X position of the right paddle
 
-PADDLE_WIDTH DW 04h 				;default width of the paddle
-PADDLE_HEIGHT DW 1Fh				;default height of the paddle
+PADDLE_WIDTH DW 40d				;default width of the paddle
+PADDLE_HEIGHT DW 40d				;default height of the paddle
 PADDLE_VELCITY DW 05h 				;default velocity of the paddle
 Player1H DB 'Health'
 EndPlayer1H Db ' '
 Player2H DB 'Armour'
 EndPlayer2H Db ' '
 
-
+img DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 233, 19, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 16, 16, 16, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 17, 144, 20, 16, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 240, 107, 5, 21, 18, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 106, 5, 35, 131, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 216, 240, 132, 35, 179, 240, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 237, 238, 193, 132, 35, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 216, 21, 132, 35, 5, 18, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 5, 34, 5, 132, 143, 17, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 16, 19, 18, 18, 246, 5, 130, 238, 215, 20, 20, 18, 18, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 238, 42, 112, 105, 107, 17, 237, 214, 238, 20, 20, 20, 20, 164, 244, 17, 16, 19, 18, 18, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 236, 43, 113, 178, 107, 216, 19, 20, 20, 20, 20, 20, 20, 140, 220, 17, 17, 19, 18, 19, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 17, 18, 21, 20, 19, 20, 20, 19, 20, 18, 18, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 17, 20, 20, 20, 20, 20, 21, 17, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 138, 136, 19, 18, 239, 18, 20, 20, 20, 20, 20, 21, 18, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 43, 6, 17, 16, 179, 155, 237, 21, 20, 20, 20, 20, 20, 17, 239, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 216, 129, 34, 131, 213, 20, 20, 18, 18, 20, 236, 179, 200, 240, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 17, 18, 17, 18, 202, 218, 203, 130, 238, 20, 34, 130, 215, 197, 150, 149, 18, 18, 131, 5, 182, 17, 217, 19, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 18, 232, 19, 19, 16, 17, 17, 17, 107, 202, 215, 5, 130, 216, 132, 34, 114, 182, 53, 3, 54, 125, 190, 137, 9, 5, 204, 17, 17, 17, 17, 18, 18, 18, 18, 16, 16, 16 
+ DB 16, 16, 17, 18, 19, 18, 18, 201, 202, 18, 179, 17, 201, 34, 20, 119, 131, 131, 114, 18, 53, 79, 3, 126, 215, 130, 5, 5, 202, 17, 17, 17, 17, 17, 19, 18, 19, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 246, 241, 228, 204, 237, 132, 5, 20, 242, 222, 220, 220, 18, 214, 131, 108, 178, 17, 240, 18, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 192, 107, 34, 129, 238, 20, 20, 18, 18, 21, 236, 178, 202, 239, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 43, 4, 16, 16, 18, 21, 238, 20, 20, 20, 20, 20, 20, 17, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 209, 18, 16, 19, 17, 21, 20, 21, 20, 20, 20, 17, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 16, 20, 20, 20, 19, 21, 20, 17, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 16, 19, 20, 20, 20, 20, 19, 20, 20, 18, 18, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 142, 42, 112, 105, 131, 18, 19, 20, 20, 20, 20, 20, 20, 165, 220, 17, 16, 19, 18, 19, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 142, 42, 113, 105, 178, 17, 144, 217, 237, 20, 19, 20, 20, 141, 220, 17, 17, 19, 18, 19, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 19, 240, 107, 5, 152, 242, 145, 20, 20, 17, 18, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 18, 5, 35, 5, 108, 144, 17, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 17, 238, 20, 131, 35, 108, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 20, 241, 120, 5, 5, 242, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 241, 21, 5, 35, 18, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 107, 5, 35, 201, 215, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 180, 131, 237, 17, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 19, 17, 21, 215, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 232, 16, 16, 17, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 18, 18, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+ InverseImage DB ?
 .CODE 
 	MAIN PROC FAR
 	MOV AX,@DATA 						;save on the AX register the contents of the DATA segment
@@ -444,85 +484,138 @@ LevelThree ENDP
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DrawFighters proc NEAR
-    	MOV CX,PADDLE_LEFT_X 			;set the initial column (X)
-		MOV DX,PADDLE_LEFT_Y 			;set the initial line (Y)
+    
+		;draw lefft
+		MOV CX, PADDLE_LEFT_X   	;set the width (X) up to 64 (based on image resolution)
+	    MOV DX, PADDLE_LEFT_Y  	;set the hieght (Y) up to 64 (based on image resolution)
+		mov DI, offset img  ; to iterate over the pixels
+		   
+		    MOV BH,00h   	;set the page number
+	           	;Avoid drawing before the calculations
+	Drawit:	
+	       MOV AH,0Ch   	;set the configuration to writing a pixel
+           mov al, [DI]     ; color of the current coordinates
+	      
+	       INT 10h      	;execute the configuration
+	Start: 
+		   inc DI
+	       inc Cx       	;  loop iteration in x direction
+		   mov ax , PADDLE_LEFT_X
+		   Add ax,40
+		   cmp cx, ax
+	       Jb Drawit      	;  check if we can draw c urrent x and y and excape the y iteration
+	       mov Cx, PADDLE_LEFT_X	;  if loop iteration in y direction, then x should start over so that we sweep the grid
+	       inc DX   
+		   mov ax,	 PADDLE_LEFT_Y   	;  loop iteration in y direction
+		   add ax,40
+		   cmp dx,ax 
+	       ja  ENDING   	;  both x and y reached 00 so end program
+		   Jmp Drawit
+	ENDING:
+	;draw right
+		MOV CX, PADDLE_RIGHT_X   	;set the width (X) up to 64 (based on image resolution)
+	    MOV DX, PADDLE_RIGHT_Y  	;set the hieght (Y) up to 64 (based on image resolution)
+		mov DI, offset InverseImage - 1  ; to iterate over the pixels
+		   
+		    MOV BH,00h   	;set the page number
+	           	;Avoid drawing before the calculations
+	Drawit2:	
+	       MOV AH,0Ch   	;set the configuration to writing a pixel
+           mov al, [DI]     ; color of the current coordinates
+	      
+	       INT 10h      	;execute the configuration
+	Start2: 
+		   dec DI
+	       inc Cx       	;  loop iteration in x direction
+		   mov ax , PADDLE_RIGHT_X
+		   Add ax,40
+		   cmp cx, ax
+	       Jb Drawit2      	;  check if we can draw c urrent x and y and excape the y iteration
+	       mov Cx, PADDLE_RIGHT_X	;  if loop iteration in y direction, then x should start over so that we sweep the grid
+	       inc DX   
+		   mov ax,	 PADDLE_RIGHT_Y   	;  loop iteration in y direction
+		   add ax,39
+		   cmp dx,ax 
+	       ja  ENDING2   	;  both x and y reached 00 so end program
+		   Jmp Drawit2
 
-		DRAW_PADDLE_LEFT_HORIZONTAL:
-			MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,0Fh					;choose white as color of the pixel
-			MOV BH,00h					;set the page number
-			INT 10h 					;execute the configuration
+		   ENDING2:
+		; DRAW_PADDLE_LEFT_HORIZONTAL:
+		; 	MOV AH,0Ch					;set the configuration to writing the pixel
+		; 	MOV AL,0Fh					;choose white as color of the pixel
+		; 	MOV BH,00h					;set the page number
+		; 	INT 10h 					;execute the configuration
 
-			INC CX 						;CX = CX + 1
-			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-			SUB AX,PADDLE_LEFT_X	
-			CMP AX,PADDLE_WIDTH
-			JNG DRAW_PADDLE_LEFT_HORIZONTAL
+		; 	INC CX 						;CX = CX + 1
+		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+		; 	SUB AX,PADDLE_LEFT_X	
+		; 	CMP AX,PADDLE_WIDTH
+		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL
 
-            inc dx
-            jmp HelperDraw
-            DRAW_PADDLE_LEFT_HORIZONTAL2:
-			MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,0Fh					;choose white as color of the pixel
-			MOV BH,00h					;set the page number
-			INT 10h 					;execute the configuration
-            HelperDraw:
-			INC CX 						;CX = CX + 1
-			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-			SUB AX,PADDLE_LEFT_X
-            add ax,2d	
-			CMP AX,PADDLE_WIDTH
-			JNG DRAW_PADDLE_LEFT_HORIZONTAL2
+        ;     inc dx
+        ;     jmp HelperDraw
+        ;     DRAW_PADDLE_LEFT_HORIZONTAL2:
+		; 	MOV AH,0Ch					;set the configuration to writing the pixel
+		; 	MOV AL,0Fh					;choose white as color of the pixel
+		; 	MOV BH,00h					;set the page number
+		; 	INT 10h 					;execute the configuration
+        ;     HelperDraw:
+		; 	INC CX 						;CX = CX + 1
+		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+		; 	SUB AX,PADDLE_LEFT_X
+        ;     add ax,2d	
+		; 	CMP AX,PADDLE_WIDTH
+		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL2
             
-			MOV CX,PADDLE_LEFT_X 		;the CX register goes back to the initial column
-			INC DX 						;we advance one line
-			MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
-			SUB AX,PADDLE_LEFT_Y
-            add ax,2d					
-			CMP AX,PADDLE_HEIGHT
-			JNG DRAW_PADDLE_LEFT_HORIZONTAL2
+		; 	MOV CX,PADDLE_LEFT_X 		;the CX register goes back to the initial column
+		; 	INC DX 						;we advance one line
+		; 	MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
+		; 	SUB AX,PADDLE_LEFT_Y
+        ;     add ax,2d					
+		; 	CMP AX,PADDLE_HEIGHT
+		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL2
 
-            inc dx 
-            DRAW_PADDLE_LEFT_HORIZONTAL3:
+        ;     inc dx 
+        ;     DRAW_PADDLE_LEFT_HORIZONTAL3:
             
-            MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,0Fh					;choose white as color of the pixel
-			MOV BH,00h					;set the page number
-			INT 10h 
-            INC CX 						;CX = CX + 1
-			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-			SUB AX,PADDLE_LEFT_X	
-			CMP AX,PADDLE_WIDTH
-			JNG DRAW_PADDLE_LEFT_HORIZONTAL3		
+        ;     MOV AH,0Ch					;set the configuration to writing the pixel
+		; 	MOV AL,0Fh					;choose white as color of the pixel
+		; 	MOV BH,00h					;set the page number
+		; 	INT 10h 
+        ;     INC CX 						;CX = CX + 1
+		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+		; 	SUB AX,PADDLE_LEFT_X	
+		; 	CMP AX,PADDLE_WIDTH
+		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL3		
 
 
-			MOV CX,PADDLE_RIGHT_X 		;set the initial column (X)
-			MOV DX,PADDLE_RIGHT_Y 		;set the initial line (Y)
+		; 	MOV CX,PADDLE_RIGHT_X 		;set the initial column (X)
+		; 	MOV DX,PADDLE_RIGHT_Y 		;set the initial line (Y)
            
-		DRAW_PADDLE_RIGHT_HORIZONTAL:
-			MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,0Fh					;choose white as color of the pixel
-			MOV BH,00h					;set the page number
-			INT 10h 					;execute the configuration
+		; DRAW_PADDLE_RIGHT_HORIZONTAL:
+		; 	MOV AH,0Ch					;set the configuration to writing the pixel
+		; 	MOV AL,0Fh					;choose white as color of the pixel
+		; 	MOV BH,00h					;set the page number
+		; 	INT 10h 					;execute the configuration
 
-			INC CX 						;CX = CX + 1
-			MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-			SUB AX,PADDLE_RIGHT_X		
-			CMP AX,PADDLE_WIDTH
-			JNG DRAW_PADDLE_RIGHT_HORIZONTAL
+		; 	INC CX 						;CX = CX + 1
+		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+		; 	SUB AX,PADDLE_RIGHT_X		
+		; 	CMP AX,PADDLE_WIDTH
+		; 	JNG DRAW_PADDLE_RIGHT_HORIZONTAL
 
-            inc dx
-            MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,0Fh					;choose white as color of the pixel
-			MOV BH,00h					;set the page number
-			INT 10h 	
+        ;     inc dx
+        ;     MOV AH,0Ch					;set the configuration to writing the pixel
+		; 	MOV AL,0Fh					;choose white as color of the pixel
+		; 	MOV BH,00h					;set the page number
+		; 	INT 10h 	
            
-			MOV CX,PADDLE_RIGHT_X 		;the CX register goes back to the initial column
-			INC DX 						;we advance one line
-			MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
-			SUB AX,PADDLE_RIGHT_Y					
-			CMP AX,PADDLE_HEIGHT
-			JNG DRAW_PADDLE_RIGHT_HORIZONTAL
+		; 	MOV CX,PADDLE_RIGHT_X 		;the CX register goes back to the initial column
+		; 	INC DX 						;we advance one line
+		; 	MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
+		; 	SUB AX,PADDLE_RIGHT_Y					
+		; 	CMP AX,PADDLE_HEIGHT
+		; 	JNG DRAW_PADDLE_RIGHT_HORIZONTAL
 
     RET
     DrawFighters ENDP
@@ -623,7 +716,7 @@ LevelThree ENDP
 		;&& BALL_Y + BALL_SIZE > PADDLE_LEFT_Y && BALL_Y < PADDLE_LEFT_Y + PADDLE_HEIGHT
 
 		MOV AX,PADDLE_RIGHT_X
-		sub AX,PADDLE_WIDTH
+		add ax,10
 		CMP Bulletp11_X,AX
 		JL CHECK_COLLISION_WITH_LEFT_PADDLE					;if there is no collision exit the procedure
 
@@ -769,7 +862,7 @@ RESET_Bullet_POSITION proc NEAR
 		MOV Bulletp11_X,AX 					;setting current X-coordinate of the ball to BALL_ORIGINAL_X
 
 		MOV AX,PADDLE_LEFT_Y
-		add ax,16
+		add ax,19
 		MOV Bulletp11_Y,AX 					;setting current Y-coordinate of the ball to BALL_ORIGINAL_X
 
 
