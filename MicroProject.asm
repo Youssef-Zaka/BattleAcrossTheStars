@@ -2,8 +2,7 @@
 .STACK 100
 ;******  Data Segment ******
 .DATA
-BALL_ORIGINAL_X DW 0Ah				;X position of the ball at the beginning of tha game
-BALL_ORIGINAL_Y DW 16d 	
+
 player1wins   db      "Player one WON" , '$'
 player2wins   db      "Player two WON" , '$'
 winner Db 0d
@@ -33,9 +32,9 @@ WINDOW_BOUNDS DW 6 					;variable used to check collisions early
 TIME_AUX DB 0 						;variable used when checking if the time has changed
 ;p1
 Bulletp11_X DW 0Ah 			        ;current X position (column) of the first bulley
-Bulletp11_Y DW 16d 			        	;current Y position (line) of the first bullet
-Bulletp12_X DW 0Ah 						;current X position (column) of the second bulley 
-BulletP12_Y DW 0Ah 						;current Y position (line) of the second bullet
+Bulletp11_Y DW 30d 			        	;current Y position (line) of the first bullet
+Bulletp12_X DW 278d 						;current X position (column) of the second bulley 
+BulletP12_Y DW 119D 						;current Y position (line) of the second bullet
 ;p2
 Bulletp21_X DW 0A0h				        ;current X position (column) of the first bulley
 Bulletp21_Y DW 64h 			        	;current Y position (line) of the first bullet
@@ -52,7 +51,7 @@ NewPaddleLeftX DW ?
 NewPaddleLeftY DW ?
 
 PADDLE_RIGHT_X DW 280d 				;current X position of the right paddle
-PADDLE_RIGHT_Y DW 0Ah 				;current X position of the right paddle
+PADDLE_RIGHT_Y DW 100D 				;current X position of the right paddle
 NewPaddleRightX DW ?
 NewPaddleRightY DW ?
 
@@ -702,32 +701,7 @@ LevelThree ENDP
     DrawFighters ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DrawBullets proc NEAR
-;        MOV CX,Bulletp11_X 					;set the initial column (X)
-;		MOV DX,Bulletp11_Y 					;set the initial line (Y)
-;
-;		DRAW_BALL_HORIZONTAL:
-;			MOV AH,0Ch					;set the configuration to writing the pixel
-;			MOV AL,0Ch					;choose Red as color of the pixel
-;			MOV BH,00h					;set the page number
-;			INT 10h 					;execute the configuration
-;
-;			INC CX 						;CX = CX + 1
-;			MOV AX,CX					
-;			SUB AX,Bulletp11_X		
-;			CMP AX,BulletSize 			;CX - BALL_X > BALL_SIZE (Y-> We go to the next line. N-> we continue to the next column)
-;			JNG DRAW_BALL_HORIZONTAL
- ;          	
-  ;          mov Ax,1
-   ;         add ax,Bulletp11_Y
-    ;        cmp DX,ax
-     ;       je retDrawBall
-      ;      inc DX
-	   ; 	mov cx,Bulletp11_X 		;the CX register goes back to the initial column
-		;	MOV AX,CX					
-		;	SUB AX,Bulletp11_X		
-		;	CMP AX,BulletSize 			;CX - BALL_X > BALL_SIZE (Y-> We go to the next line. N-> we continue to the next column)
-		;	JNG DRAW_BALL_HORIZONTAL
- ;           retDrawBall:
+
             mov ax, 0A000h      ; to graphics screen
             mov es, ax  
 
@@ -747,6 +721,25 @@ LevelThree ENDP
         	add  ax,320
         	mov di, ax
         	mov Al,0CH
+        	mov cx,BulletSize 
+        	rep STOSB
+
+			MOV AX,Bulletp12_Y 					;set the initial column (X)
+           	MOV DX,Bulletp12_X					;set the initial line (Y)
+        	mov cx, 320d
+        	mul cx					 
+        	add ax,Bulletp12_X
+        	mov di, ax      ; (row*320+col)
+            mov Al,0DH
+            mov cx,BulletSize       
+            rep STOSB
+        	MOV AX,Bulletp12_Y
+        	mov cx, 320d
+        	mul cx					
+        	add ax,Bulletp12_X
+        	add  ax,320
+        	mov di, ax
+        	mov Al,0DH
         	mov cx,BulletSize 
         	rep STOSB
             RET
@@ -775,49 +768,50 @@ LevelThree ENDP
         	mov Al,00H
         	mov cx,BulletSize 
         	rep STOSB
+			MOV AX,Bulletp12_Y 					;set the initial column (X)
+           	MOV DX,Bulletp12_X					;set the initial line (Y)
+        	mov cx, 320d
+        	mul cx					;execute the configuration
+        	add ax,Bulletp12_X
+        	mov di, ax      ; (row*320+col)
+            mov Al,00H
+            mov cx,BulletSize       
+            rep STOSB
+        	MOV AX,Bulletp12_Y
+        	mov cx, 320d
+        	mul cx					;execute the configuration
+        	add ax,Bulletp12_X
+        	add  ax,320
+        	mov di, ax
+        	mov Al,00H
+        	mov cx,BulletSize 
+        	rep STOSB
 
 		MOV AX,Bullet_VELOCITY_X
 		ADD Bulletp11_X,AX 					;move the bullet horizontally
-		;check if it has passed the left boundaries (Bulletp11_X < 0 + WINDOW_BOUNDS)
-		;if its colliding restart its position
-		MOV AX,WINDOW_BOUNDS
-		CMP Bulletp11_X,AX 					;Bulletp11_X is compared with the left boundaries of the screen
-		JL RESET_POSITION 				;if it is less, reset position
-
-		;check if it has passed the right boundaries (Bulletp11_X > WINDOW_WIDTH - BulletSize - WINDOW_BOUNDS)
-		;if its colliding restart its position
 		MOV AX,WINDOW_WIDTH
 		SUB AX,BulletSize
 		SUB AX,WINDOW_BOUNDS
 		CMP Bulletp11_X,AX					;Bulletp11_X is compared with the right boundaries of the screen
-		JG RESET_POSITION 				;if it is greater, reset position
-
-      ;  MOV AX,Bullet_VELOCITY_X
-		;ADD Bulletp21_X,AX 					;move the bullet horizontally
-		;check if it has passed the left boundaries (Bulletp21_X < 0 + WINDOW_BOUNDS)
+		JG FAR ptr RESET_POSITION 			;if it is greater, reset position
+		MOV AX,Bullet_VELOCITY_X
+		sub Bulletp12_X,AX 					;move the bullet horizontally
+		;check if it has passed the left boundaries (Bulletp11_X < 0 + WINDOW_BOUNDS)
 		;if its colliding restart its position
-		;MOV AX,WINDOW_BOUNDS
-		;CMP Bulletp21_X,AX 					;Bulletp21_X is compared with the left boundaries of the screen
-		;JL RESET_POSITION 				;if it is less, reset position
+		MOV AX,WINDOW_BOUNDS
+		CMP Bulletp12_X,AX 					;Bulletp12_X is compared with the left boundaries of the screen
+		JL RESET_POSITION2 				;if it is less, reset position
 
-		;check if it has passed the right boundaries (Bulletp21_X > WINDOW_WIDTH - BALL_SIZE - WINDOW_BOUNDS)
-		;if its colliding restart its position
-		;MOV AX,WINDOW_WIDTH
-		;SUB AX,BulletSize
-		;SUB AX,WINDOW_BOUNDS
-		;CMP Bulletp21_X,AX					;Bulletp21_X is compared with the right boundaries of the screen
-		;JG RESET_POSITION 				;if it is greater, reset position
-
-
-		;Check if the ball is colliding with rigth paddle
-		;maxx1 > maxx2 && minx1 < maxx2 && maxy1 > miny2 && miny1 < maxy2
-		;BALL_X + BALL_SIZE > PADDLE_RIGHT_X && BALL_X < PADDLE_RIGHT_X + PADDLE_WIDTH 
-		;&& BALL_Y + BALL_SIZE > PADDLE_RIGHT_Y && BALL_Y < PADDLE_RIGHT_Y + PADDLE_HEIGHT
-		;
-		;minx1 < maxx2 && maxx1 > minx2 && maxy1 > miny2 && miny1 < maxy2
-		;BALL_X < PADDLE_LEFT_X + PADDLE_WIDTH && BALL_X +BALL_SIZE > PADDLE_LEFT_X
-		;&& BALL_Y + BALL_SIZE > PADDLE_LEFT_Y && BALL_Y < PADDLE_LEFT_Y + PADDLE_HEIGHT
-
+;;		
+		jmp contafterjmp
+		
+		RESET_POSITION:
+		Call RESET_Bullet_POSITION
+		RET
+		RESET_POSITION2:
+		Call RESET_Bullet_POSITION2
+		RET
+		contafterjmp:
 		MOV AX,PADDLE_RIGHT_X
 		add ax,10
 		CMP Bulletp11_X,AX
@@ -840,46 +834,33 @@ LevelThree ENDP
         Dec Player2Health
 		cmp Player2Health , 48d
 		je ENDGAME1
-		JMP RESET_POSITION
+		CALL RESET_Bullet_POSITION
+
 
 		CHECK_COLLISION_WITH_LEFT_PADDLE:
-		MOV AX,Bulletp11_X
-		ADD AX,BulletSize
-		CMP AX,PADDLE_RIGHT_X
+		MOV AX,PADDLE_LEFT_X
+		add ax,PADDLE_WIDTH 
+		CMP AX,Bulletp12_X
 		JNG EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
 
-		MOV AX,PADDLE_RIGHT_X
-		ADD AX,PADDLE_WIDTH
-		CMP Bulletp11_X,AX
-		JNL EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
-
-		MOV AX,Bulletp11_Y
+		MOV AX,Bulletp12_Y
 		ADD AX,BulletSize
-		CMP AX,PADDLE_RIGHT_Y
+		CMP AX,PADDLE_LEFT_Y
 		JNG EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
 
-		MOV AX,PADDLE_RIGHT_Y
+		MOV AX,PADDLE_LEFT_Y
 		ADD AX,PADDLE_HEIGHT
-		CMP Bulletp11_Y,AX
+		CMP Bulletp12_Y,AX
 		JNL EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
 
-		;if it reaches this point the ball is colliding with the right paddle
+		;if it reaches this point the ball is colliding with the left paddle
 
-		;
-        ;
-        ;dec player 2 health
-        ;
-        ;
-		RET 	
+		Dec Player1Health
+		cmp Player1Health , 48d
+		je ENDGAME2
+		CALL RESET_Bullet_POSITION2 	
 
-
-        RESET_POSITION:
-	    	CALL RESET_Bullet_POSITION	;reset ball position to the center of the screen
-			RET
-
-			RET
-
-		
+        RET
         ;
         ;
 		;exit this procedure
@@ -887,11 +868,13 @@ LevelThree ENDP
 		mov winner,1
 		Call PLAYERWINS
 		jmp EXIT_BALL_COLLISION
-		ENDGAM2E:
+		ENDGAME2:
 		mov winner ,2
 		Call PLAYERWINS
 		EXIT_BALL_COLLISION:
 	    RET
+
+		
 
 	MOVE_Bullet ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -971,6 +954,18 @@ RESET_Bullet_POSITION proc NEAR
 
 RET
 RESET_Bullet_POSITION ENDP
+RESET_Bullet_POSITION2 proc NEAR
+
+   		MOV AX,PADDLE_RIGHT_X 			
+		MOV Bulletp12_X,AX 					;setting current X-coordinate of the ball to BALL_ORIGINAL_X
+
+		MOV AX,PADDLE_RIGHT_Y
+		add ax,19
+		MOV Bulletp12_Y,AX 					;setting current Y-coordinate of the ball to BALL_ORIGINAL_X
+
+
+RET
+RESET_Bullet_POSITION2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	CLEAR_SCREEN PROC NEAR 				;procedure to clear the screen by restarting the video mode
 
