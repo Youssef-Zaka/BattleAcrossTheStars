@@ -48,9 +48,13 @@ Bullet_VELOCITY_Y DW 02h				;Y (vertical) velocity of the ball
 
 PADDLE_LEFT_X DW 0d				;current X position of the left paddle
 PADDLE_LEFT_Y DW 0Ah 				;current Y position of the left paddle
+NewPaddleLeftX DW ?
+NewPaddleLeftY DW ?
 
 PADDLE_RIGHT_X DW 280d 				;current X position of the right paddle
 PADDLE_RIGHT_Y DW 0Ah 				;current X position of the right paddle
+NewPaddleRightX DW ?
+NewPaddleRightY DW ?
 
 PADDLE_WIDTH DW 40d				;default width of the paddle
 PADDLE_HEIGHT DW 40d				;default height of the paddle
@@ -128,7 +132,7 @@ MAIN ENDP
 
 		;if it reaches this point, it's because the time has passed
 		MOV TIME_AUX,DL 			;if not update time
-		CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode
+		;CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode
 
         CALL StatusBar
 
@@ -379,7 +383,16 @@ RET
 LevelThree ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Move_Fighters proc NEAR
-        ;Left paddle movement
+
+		mov ax, PADDLE_LEFT_X
+		mov NewPaddleLeftX, ax
+		mov ax, PADDLE_LEFT_Y
+		mov NewPaddleLeftY, ax
+        mov ax, PADDLE_RIGHT_X
+		mov NewPaddleRightX, ax
+		mov ax, PADDLE_RIGHT_Y
+		mov NewPaddleRightY, ax
+        
 		;check if any key is being pressed (if not check the other paddle)
 		MOV AH,01h
 		INT 16h
@@ -478,6 +491,74 @@ LevelThree ENDP
 				JMP EXIT_PADDLE_MOVEMENT
 
 		EXIT_PADDLE_MOVEMENT:
+
+
+			mov cx, PADDLE_LEFT_X
+			mov dx, NewPaddleLeftX
+			cmp cx, dx
+			jne OldMovement
+			mov cx, PADDLE_LEFT_Y
+			mov dx, NewPaddleLeftY
+			cmp cx, dx
+			je NoOldMovement
+
+		OldMovement:
+			mov cx, NewPaddleLeftX
+			mov dx, NewPaddleLeftY
+
+
+			DRAW_PADDLE_LEFT_HORIZONTAL:
+			MOV AH,0Ch					;set the configuration to writing the pixel
+			MOV AL,00h					;choose white as color of the pixel
+			MOV BH,00h					;set the page number
+			INT 10h 					;execute the configuration
+
+			INC CX 						;CX = CX + 1
+			MOV AX,NewPaddleLeftX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			add AX,PADDLE_WIDTH	
+			CMP cx,ax
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL
+			mov cx, NewPaddleLeftX
+			inc dx
+			MOV AX,NewPaddleLeftY					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			add AX,PADDLE_HEIGHT	
+			cmp dx,ax
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL
+
+		NoOldMovement:
+			mov cx, PADDLE_RIGHT_X
+			mov dx, NewPaddleRightX
+			cmp cx, dx
+			jne OldMovement2
+			mov cx, PADDLE_RIGHT_Y
+			mov dx, NewPaddleRightY
+			cmp cx, dx
+			je NoOldMovement2
+
+		OldMovement2:
+			mov cx, NewPaddleRightX
+			mov dx, NewPaddleRightY
+
+
+			DRAW_PADDLE_Right_HORIZONTAL:
+			MOV AH,0Ch					;set the configuration to writing the pixel
+			MOV AL,00h					;choose white as color of the pixel
+			MOV BH,00h					;set the page number
+			INT 10h 					;execute the configuration
+
+			INC CX 						;CX = CX + 1
+			MOV AX,NewPaddleRightX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			add AX,PADDLE_WIDTH	
+			CMP cx,ax
+			JNG DRAW_PADDLE_Right_HORIZONTAL
+			mov cx, NewPaddleRightX
+			inc dx
+			MOV AX,NewPaddleRightY					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			add AX,PADDLE_HEIGHT	
+			cmp dx,ax
+			JNG DRAW_PADDLE_Right_HORIZONTAL
+
+		NoOldMovement2:
 
     RET
     Move_Fighters ENDP
@@ -672,6 +753,28 @@ LevelThree ENDP
     DrawBullets ENDP
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     MOVE_Bullet PROC NEAR					;process the movemment of the bullet
+
+		 mov ax, 0A000h      ; to graphics screen
+            mov es, ax  
+
+            MOV AX,Bulletp11_Y 					;set the initial column (X)
+           	MOV DX,Bulletp11_X					;set the initial line (Y)
+        	mov cx, 320d
+        	mul cx					;execute the configuration
+        	add ax,Bulletp11_X
+        	mov di, ax      ; (row*320+col)
+            mov Al,00H
+            mov cx,BulletSize       
+            rep STOSB
+        	MOV AX,Bulletp11_Y
+        	mov cx, 320d
+        	mul cx					;execute the configuration
+        	add ax,Bulletp11_X
+        	add  ax,320
+        	mov di, ax
+        	mov Al,00H
+        	mov cx,BulletSize 
+        	rep STOSB
 
 		MOV AX,Bullet_VELOCITY_X
 		ADD Bulletp11_X,AX 					;move the bullet horizontally
