@@ -2,67 +2,69 @@
 .STACK 100
 ;******  Data Segment ******
 .DATA
-
-player1wins   db      "Player one WON" , '$'
-player2wins   db      "Player two WON" , '$'
-winner Db 0d
-GameLevel DB ?
-Player1Health DB ?
-Player2Health DB ?
-Player1Armour DB ?
-Player2Armour DB ?
-ChooseGameLvl DB "Please Choose Game Level (press 1, 2, or 3)",'$'
-lvl1 DB "Level 1",'$'
-lvl2 DB "Level 2",'$'
-lvl3 DB "Level 3",'$'
-PlayerName DB 15 DUP(?),'$'	    
-EnterName DB "Please Enter your name: ",0Dh,0Ah,09h, '$'
-PressEnter DB "Press ENTER key to continue",'$'
-msg1    db      "Please select a mode" , '$'
-msg2	    db      "press f1 for chatting mode", '$'
-msg3	    db      "press f2 for game mode ", '$'
-msg4	    db      "press ESC to exit", '$'
-
-
-msg0 db      "Thank you for playing our game, press any key to exit",0Dh,0Ah,09h, '$'
+;;start of data segment 
+player1wins   db      "Player one WON" , '$' ;display when p1 wins
+player2wins   db      "Player two WON" , '$' ; display when p2 wins
+winner Db 0d	;used to know who the winner is, 1 or 2, if 0, no one won, variable is checked after every ball collision
+GameLevel DB ?	;used to know which game level the user chose
+Player1Health DB ?	;current health of player 1
+Player2Health DB ? 	;current health of player 2
+Player1Armour DB ? 	;current armour of player 1
+Player2Armour DB ?	;current armour of player 2
+ChooseGameLvl DB "Please Choose Game Level (press 1, 2, or 3)",'$' 	;string displayer at level selection
+lvl1 DB "Level 1",'$' 	;string displayer at level selection
+lvl2 DB "Level 2",'$'	;string displayer at level selection
+lvl3 DB "Level 3",'$'	;string displayer at level selection
+PlayerName DB 15 DUP(?),'$'	;15 Bytes used to hold username, can only start with a letter    
+EnterName DB "Please Enter your name: ",0Dh,0Ah,09h, '$' 	;string displayer at Name selection
+PressEnter DB "Press ENTER key to continue",'$' 	;string displayer at Name selection
+msg1    db      "Please select a mode" , '$' 	;string displayer at Mode selection
+msg2	    db      "press f1 for chatting mode", '$'	;string displayer at Mode selection/chat mode
+msg3	    db      "press f2 for game mode ", '$'	;string displayer at Mode selection/game mode
+msg4	    db      "press ESC to exit", '$'	;string displayer at Mode selection / exit program
+msg0 db      "Thank you for playing our game, press any key to exit",0Dh,0Ah,09h, '$'	;string displayer when exiting program
 WINDOW_WIDTH DW 140h				;the width of the window (320 pixels)
 WINDOW_HEIGHT DW 150d				;the height of the window of accesiable gameing area(150 pixels)
 WINDOW_BOUNDS DW 6 					;variable used to check collisions early
 
 TIME_AUX DB 0 						;variable used when checking if the time has changed
 ;p1
-Bulletp11_X DW 0Ah 			        ;current X position (column) of the first bulley
-Bulletp11_Y DW 30d 			        	;current Y position (line) of the first bullet
-Bulletp12_X DW 278d 						;current X position (column) of the second bulley 
-BulletP12_Y DW 119D 						;current Y position (line) of the second bullet
+Bulletp11_X DW 0Ah 			        	;current X position (column) of the first player bullet
+Bulletp11_Y DW 30d 			        	;current Y position (line) of the first player bullet
+Bulletp12_X DW 278d 					;current X position (column) of the second player bullet 
+BulletP12_Y DW 119D 					;current Y position (line) of the second player bullet
 ;p2
-Bulletp21_X DW 0A0h				        ;current X position (column) of the first bulley
-Bulletp21_Y DW 64h 			        	;current Y position (line) of the first bullet
-Bulletp22_X DW 0Ah 						;current X position (column) of the second bulley 
-BulletP22_Y DW 0Ah 						;current Y position (line) of the second bullet
+Bulletp21_X DW 0A0h				        ;current X position (column) first Multishot
+Bulletp21_Y DW 64h 			        	;current Y position (line) of first Multishot
+Bulletp22_X DW 0Ah 						;current X position (column) of the second Multishot 
+BulletP22_Y DW 0Ah 						;current Y position (line) of the second Multishot
             
-BulletSize DW 08h					;size of the bullet (how many pixels does the ball have in width and height)
+BulletSize DW 08h						;size of the bullet (how many pixels does the bullet have) w x h
 Bullet_VELOCITY_X DW 0Ah 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
-Bullet_VELOCITY_Y DW 02h				;Y (vertical) velocity of the ball
+Bullet_VELOCITY_Y DW 02h				;Y (vertical) velocity of the ball 
 
-PADDLE_LEFT_X DW 0d				;current X position of the left paddle
-PADDLE_LEFT_Y DW 0Ah 				;current Y position of the left paddle
-NewPaddleLeftX DW ?
-NewPaddleLeftY DW ?
+PADDLE_LEFT_X DW 0d					;current X position of the left paddle or fighter or space ship, call it whatever
+PADDLE_LEFT_Y DW 0Ah 				;current Y position of the left paddle or fighter or space ship, call it whatever
+OldPaddleLeftX DW ?					;Old X position of the left paddle or fighter or space ship, call it whatever
+OldPaddleLeftY DW ?					;Old X position of the left paddle or fighter or space ship, call it whatever
 
-PADDLE_RIGHT_X DW 280d 				;current X position of the right paddle
-PADDLE_RIGHT_Y DW 100D 				;current X position of the right paddle
-NewPaddleRightX DW ?
-NewPaddleRightY DW ?
+PADDLE_RIGHT_X DW 280d 				;current X position of the right paddle or fighter or space ship, call it whatever
+PADDLE_RIGHT_Y DW 100D 				;current X position of the right paddle or fighter or space ship, call it whatever
+NewPaddleRightX DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
+NewPaddleRightY DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
 
-PADDLE_WIDTH DW 40d				;default width of the paddle
-PADDLE_HEIGHT DW 40d				;default height of the paddle
-PADDLE_VELCITY DW 05h 				;default velocity of the paddle
-Player1H DB 'Health'
-EndPlayer1H Db ' '
-Player2H DB 'Armour'
-EndPlayer2H Db ' '
+PADDLE_WIDTH DW 40d					;default width of the paddle, depends on picture width (horizontal pixels count)
+PADDLE_HEIGHT DW 40d				;default height of the paddle,  depends on picture height (Vertical pixels count)
+PADDLE_VELOCITY DW 05h 				;default velocity of the paddle or fighter or space ship, call it whatever
+Player1H DB 'Health'				;String to be displayed at status bar
+EndPlayer1H Db ' '					;Used to print above string
+Player2H DB 'Armour'				;String to be displayed at status bar
+EndPlayer2H Db ' '					;Used to print above string
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;This is the pixels of the fighter space ship used to draw the paddle;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;40x40 pixels, width x height;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 img DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 233, 19, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 16, 16, 16, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
@@ -103,79 +105,105 @@ img DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 1
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 232, 16, 16, 17, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 17, 18, 18, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
- InverseImage DB ?
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF FIGHTER PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ InverseImage DB ? ;variable used to draw the above picture in reverse , as in the second fihter or player 2, used to save data segment memory
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF DATA SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;START OF CODE SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ ;start of code
 .CODE 
-	MAIN PROC FAR
+	MAIN PROC FAR                       ;main proc
 	MOV AX,@DATA 						;save on the AX register the contents of the DATA segment
 	MOV DS,AX                           ;save on the DS segment the contents of the AX
-    CALL GetPlayerName
-	infLoop:
-    CALL MainMenu
-	mov cx,3d
-	cmp cx,2d
-	JNE infLoop
+    CALL GetPlayerName					;Get Player names
+	infLoop:							;key repeating until esc key is pressed in main menu
+    CALL MainMenu						;keep calling main menu if the player chooses so
+	mov cx,3d							;used to set up inf loop
+	cmp cx,2d							;used to set up inf loop
+	JNE infLoop							;used to set up inf loop
 
-    MOV AH,4CH          ;Inturupt is ended and control is back to the system 
-    INT 21H
-MAIN ENDP
-
-    GameMode proc NEAR
-    CALL ChooseLevel
-    CALL CLEAR_SCREEN
-     CHECK_TIME: 					;time loop of the game
+    MOV AH,4CH        					;control is back to the system 
+    INT 21H								;control is back to the system
+MAIN ENDP								;end of main proc
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    GameMode proc NEAR 			;Game Mode Procedure that controlls and updates the game
+    CALL ChooseLevel			;initiates game level selection
+    CALL CLEAR_SCREEN			;clear the screen and go to video mode
+     CHECK_TIME: 					;a loop for checking the next frame arival
 		MOV AH,2Ch					;get the system time
 		INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
 
 		CMP DL,TIME_AUX				;is the current time equal to the previous one (TIME_AUX)?
-		JE CHECK_TIME				;if it is the same ,check again
+		JE CHECK_TIME				;if it is the same ,wait for new frame
 
-		;if it reaches this point, it's because the time has passed
-		MOV TIME_AUX,DL 			;if not update time
-		;CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode
+		;if it reaches this point, it's because this is the new frame
+		MOV TIME_AUX,DL 			;Update time with new frame
+		;CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode/ CAUSED FLICKERING<>> REMOVED
+									; Instead each element on the screen is drawed in black in old location and redrawin in new location
+        CALL StatusBar				;Updates Status Bar Each Time Step
 
-        CALL StatusBar
+		CALL MOVE_Bullet 				;calling the procedure to move the Bullets, check for collision remove old bullet locations
+		CALL DrawBullets 				;calling the procedure to draw the bullets
 
-		CALL MOVE_Bullet 				;calling the procedure to move the balls
-		CALL DrawBullets 				;calling the procedure to draw the ball
+		cmp winner,0					;checks if a winner exists
+		jne ReturnToMainMenu			;If someone did win, return to main menu
 
-		cmp winner,0
-		jne ReturnToMainMenu
+		CALL Move_Fighters 			;move the paddles or fighters (check for key presses) and remove old paddles
+		CALL DrawFighters 			;draw the paddles or fighters with the updated positions
 
-		CALL Move_Fighters 			;move the paddles (check for key presses)
-		CALL DrawFighters 			;draw the paddles with the updated positions
-
-		JMP	CHECK_TIME 				;after everything check time again
+		JMP	CHECK_TIME 				;repeat every time the system time chamges
 	ReturnToMainMenu:
     RET
     GameMode ENDP
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-StatusBar proc NEAR
-mov cx,0
-mov dx,WINDOW_HEIGHT
-mov al,5d
-mov ah,0ch
-Status:
-int 10h
-inc cx
-cmp cx,320
-jnz Status
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+StatusBar proc NEAR 	  ;Procedure Resposible for updating status bar/////PHASE 3> Should also have text mode 
+;GETTING READY TO DRAW A PURPLE LINE BEFORE STATUS AREA OF THE SCREEN
+mov cx,0				;set x axis location to 0  
+mov dx,WINDOW_HEIGHT	;set y axis location to Window Height variable
+mov al,5d				;pixel colour
+mov ah,0ch				;Draw Pixel config
+Status:					;loop used to draw the line
+int 10h					;draw a pixel
+inc cx					;inc x axis position
+cmp cx,WINDOW_WIDTH		;check if it reached the end >> 320 pixels or window width
+jnz Status				;if not, repeat to drow a horizontal line of length = window length
 
-;;draw health left
-mov al, 1
-mov bh, 0
-mov bl,  00000010b
-mov cx, offset EndPlayer1H - offset Player1H ; calculate message size. 
-mov dx, WINDOW_HEIGHT
-mov dh, dl
-sub dh, 2d
-mov dl,0
-push DS
-pop es
-mov bp, offset Player1H
-mov ah, 13h
-int 10h
-;;draw p1 health
+;;draw health for left player using 13h/10h int
+mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
+mov bh, 0				;Page Number
+mov bl,  00000010b		;Attributes : Green color on black background 
+mov cx, offset EndPlayer1H - offset Player1H ; calculate message size for loop 
+mov dx, WINDOW_HEIGHT	;to get  window height(or row number) in dh (MUST DO FOR INTURUPT TO WORK), we first need to move it to dx (16 bit to 16 bit)
+mov dh, dl				;most segnificants are 00000000, so move dl to dh , now we have window heigth on dh
+sub dh, 2d				; subtract 2, looks better 
+mov dl,0				; Collumn number 
+push DS 				;neccesary for inturupt not to break the code
+pop es					; es = ds
+mov bp, offset Player1H	; bp = player 1 health msg ofsset, es and bp used to prng strings
+mov ah, 13h				;inturupt 13h/10h
+int 10h					;perform inturupt
+;;draw health for right player using 13h/10h int
+;; SAME STEPS AS ABOVE BUT DRAW HEALTH value under healt string in green aswell
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 mov al, 1
 mov bh, 0
 mov bl,  00000010b
@@ -188,8 +216,9 @@ pop es
 mov bp, offset Player1Health
 mov ah, 13h
 int 10h
-
-;;draw health Right
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SAME STEPS AS ABOVE BUT DRAW HEALTH String under second player
 mov al, 1
 mov bh, 0
 mov bl,  00000010b
@@ -203,7 +232,9 @@ pop es
 mov bp, offset Player1H
 mov ah, 13h
 int 10h
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SAME STEPS AS ABOVE BUT DRAW HEALTH value under health string under second player
 ;;draw p2 health
 mov al, 1
 mov bh, 0
@@ -217,7 +248,9 @@ pop es
 mov bp, offset Player2Health
 mov ah, 13h
 int 10h
-; printing health left
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SAME STEPS AS ABOVE BUT DRAW Armour string under first player
 mov al, 1
 mov bh, 0
 mov bl,  00000001b
@@ -231,6 +264,9 @@ pop es
 mov bp, offset Player2H
 mov ah, 13h
 int 10h
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SAME STEPS AS ABOVE BUT DRAW Armour value under string under first player
 ;;draw p1 Armour
 mov al, 1
 mov bh, 0
@@ -244,6 +280,9 @@ pop es
 mov bp, offset Player1Armour
 mov ah, 13h
 int 10h
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SAME STEPS AS ABOVE BUT DRAW Armour string under second player
 ;printing armour left
 mov al, 1
 mov bh, 0
@@ -258,6 +297,9 @@ pop es
 mov bp, offset Player2H
 mov ah, 13h
 int 10h
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SAME STEPS AS ABOVE BUT DRAW Armour value under string under first player
 ;;draw p2 Armour
 mov al, 1
 mov bh, 0
@@ -271,45 +313,36 @@ pop es
 mov bp, offset Player2Armour
 mov ah, 13h
 int 10h
-
-mov al, 1
-mov bh, 0
-mov bl,  00000001b
-mov cx, offset EndPlayer2H - offset Player2H ; calculate message size. 
-mov dx, WINDOW_HEIGHT
-mov dh, dl
-sub dh, 2d
-mov dl,25
-push DS
-pop es
-mov bp, offset Player2H
-mov ah, 13h
-int 10h
-
-
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;END OF STATUS BAR UPDATE PROCEDURE
 RET
 StatusBar ENDP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ChooseLevel proc NEAR
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;CHOOSE LEVEL PROCEDURE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    ChooseLevel proc NEAR  ; a procedure that asks the player for the level he wants to play 
     ;clear screen, blue pen grey background
-    MOV AX,0600H                       
-    MOV BH,71H
-    MOV CX,0000H
-    MOV DX,184FH
-    INT 10H
-    ;set cursor
-    MOV AH,02H
-    MOV BH,00
-    MOV DX,0817H   ; X axis = 17, Y = 8
-    INT 10H    
+    MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
+    MOV BH,71H				;set page number
+    MOV CX,0000H			;colour atributes
+    MOV DX,184FH			;colour atributes
+    INT 10H					;procede with inturupt
+    ;set cursor	location to middle of screen
+    MOV AH,02H				;move curs to x and y pos (02h/10h)
+    MOV BH,00				;set page number
+    MOV DX,0817H   			; X axis = 17, Y = 8
+    INT 10H    				;procede
     ;print msg
-    mov dx, Offset ChooseGameLvl 
-	mov     ah, 09h
-	int     21h
+    mov dx, Offset ChooseGameLvl 	;get message (ask player to choose lvl)
+	mov     ah, 09h					;print until dollar sign $
+	int     21h						;procede
     ;set cursor location to middle of screen
-    MOV AH,02H
+	;SAME AS ABOVE BUT X AND Y UPDATED and mssg updated
+    MOV AH,02H						
     MOV BH,00
     MOV DX,0A17H ; X axis = 17, Y = 0A
     INT 10H   
@@ -317,7 +350,8 @@ StatusBar ENDP
     mov dx, Offset lvl1 
 	mov     ah, 09h
 	int     21h
-     ;set cursor location to middle of screen
+    ;set cursor location to middle of screen
+	;SAME AS ABOVE BUT X AND Y UPDATED and mssg updated
     MOV AH,02H
     MOV BH,00
     MOV DX,0C17H ; X axis = 17, Y = C
@@ -327,6 +361,7 @@ StatusBar ENDP
 	mov     ah, 09h
 	int     21h
      ;set cursor location to middle of screen
+	 ;SAME AS ABOVE BUT X AND Y UPDATED and mssg updated
     MOV AH,02H
     MOV BH,00
     MOV DX,0E17H ; X axis = 17, Y = E
@@ -336,106 +371,139 @@ StatusBar ENDP
 	mov     ah, 09h
 	int     21h
     ;Hide Cursor
+	;looks good
+	;thats all
+	;really thats all
+	;it does look better without the curser 
+	;nothing sus
+	;xD 
     MOV AH,02H
     MOV BH,00
     MOV DX,3A17H ; X axis = 17, Y = 0A
     INT 10H   
-    GetLevel:
-    mov ah,0
-    int 16h
-    CMP al , '1'
-    JE  StartLVL1
-    CMP al , '2'
-    JE  StartLVL2
-    CMP al , '3'
-    JE  StartLVL3
-    JMP GetLevel
-    StartLVL1: CALL LevelOne
-    JMP ReturnLvlSelect
-    StartLVL2: CALL LevelTwo
-    JMP ReturnLvlSelect
-    StartLVL3: CALL LevelThree
-    ReturnLvlSelect:
-    RET
-    ChooseLevel ENDP
+	;; yay cursor hidden 
 
+	;;Loop to check for user input
+    GetLevel:
+    mov ah,0		;Wait for input
+    int 16h			;inturupt 0/16h gets input from user and waits for input
+    CMP al , '1'	;compare input with 1 for lvl one
+    JE  StartLVL1	;if so jump to lvl one and set up game in that way 
+    CMP al , '2'	;compare input with 2 for lvl two
+    JE  StartLVL2	;if so jump to lvl two and set up game in that way
+    CMP al , '3'	;compare input with 3 for lvl three
+    JE  StartLVL3	;if so jump to lvl three and set up game in that way
+    JMP GetLevel	;ONLY ACCEPT 1 2 or 3, if anything else , repeat till you get a valid input
+    StartLVL1: CALL LevelOne	;call level one procedure
+    JMP ReturnLvlSelect			;return from lvl select proc
+    StartLVL2: CALL LevelTwo	;call level two procedure
+    JMP ReturnLvlSelect			;return from lvl select proc
+    StartLVL3: CALL LevelThree	;call level three procedure
+    ReturnLvlSelect:			;return label
+    RET							;return
+    ChooseLevel ENDP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Procedure used to set up game level and enable level specefic mechanisms
+;LEVELS AVAILABLE 
+;LEVEL ONE :
+;				Health = 4, MAX Armour = 2, Bullet Speed = LOW (NOT YET), 	 Paddle Speed = medium (NOT YET), ENABLE ARMOUR (other modifiers experimental) (NOT YET)
+;LEVEL TWO:
+;				Health = 3, Max Armour = 1, Bullet Speed = Medium (NOT YET), Paddle SPeed = medium (NOT YET), ENABLE ARMOUR (other mods exp) (NOT YET)
+;LEVEL THREE:
+;				Health = 2, NO ARMOUR,		Bullet Speed = Fast (NOT YET), 	 Paddle Speed = Slow (NOT YET),	  DISABLE ARMOUR (other mods exp) (NOT YET)	
+;MIGHT USE THIS TO RESET PLAYER POSITIONS AND CHANGABLE VALUES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 LevelOne proc NEAR
 mov GameLevel,1d
-mov Player1Health,52d
-mov Player2Health,52d
-mov Player1Armour, 48d
-mov Player2Armour, 48d
+mov Player1Health,52d	;set p1 health to 4 (ascii used for printing, 48d ascii = zero)
+mov Player2Health,52d	;same for p2
+mov Player1Armour, 48d	;set armour to 0 for p1
+mov Player2Armour, 48d	;same for p2
 ;game speed
+;armour enable
+;max armour
+;extra mods
 
+;; Reset game mode ???
 RET
 LevelOne ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 LevelTwo proc NEAR
 mov GameLevel,2d
+;to be added
 RET
 LevelTwo ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 LevelThree proc NEAR
 mov GameLevel,3d
+;to be added
 RET
 LevelThree ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    Move_Fighters proc NEAR
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Move Fighters procedure that calculates new position and erases old image from old location
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    Move_Fighters proc NEAR		;move fighters start
 
-		mov ax, PADDLE_LEFT_X
-		mov NewPaddleLeftX, ax
-		mov ax, PADDLE_LEFT_Y
-		mov NewPaddleLeftY, ax
-        mov ax, PADDLE_RIGHT_X
+		mov ax, PADDLE_LEFT_X	;get old position for x axis
+		mov OldPaddleLeftX, ax	;set position checker
+		mov ax, PADDLE_LEFT_Y	;as above for y axis
+		mov OldPaddleLeftY, ax	
+        mov ax, PADDLE_RIGHT_X	;DO THE SAME FOR PLAYER 2
 		mov NewPaddleRightX, ax
 		mov ax, PADDLE_RIGHT_Y
 		mov NewPaddleRightY, ax
         
-		;check if any key is being pressed (if not check the other paddle)
-		MOV AH,01h
-		INT 16h
-		JZ CHECK_RIGHT_PADDLE_MOVEMENT 	;ZF=1, JZ -> Jump if zero
-
+		;check if any key is being pressed and check if it is the move key(if not check the other player)
+		MOV AH,01h	;get key pressed BUT DO NOT WAIT FOR A KEY
+		INT 16h		;inturupt 01ah/16h
+		JZ CHECK_RIGHT_PADDLE_MOVEMENT 	;ZF=1, JZ -> Jump if zero to check other fighter, means no input
+		; if it reaches here, there was in fact an input
 		;check which key is being pressed (AL = ASCII Character)
-		MOV AH,00h
-		INT 16h
 
-		CMP     AL, 1Bh 							;check for 'Esc'
+		;; TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+		;; TODO : Check for f4 instead of esc, and if so initiate end game sequence 
+		;get the key that was pressed and act accordingly
+		MOV AH,00h  ;get key wait for user
+		INT 16h 	;00ah/16h
+		CMP     AL, 1Bh 							;check for 'Esc' 
 		JZ      exit 								;Jump to exit if 'Esc' is pressed
 
-		;if it is 'w' or 'W' -> move up
+		;if it is 'w' or 'W' -> move up for left player
 		CMP AL,77h 									;check for 'w'
-		JE MOVE_LEFT_PADDLE_UP
+		JE MOVE_LEFT_PADDLE_UP						;if true move up
 		CMP AL,57h 									;check for 'W'
-		JE MOVE_LEFT_PADDLE_UP
+		JE MOVE_LEFT_PADDLE_UP						;if true move up
 
 		;if it is 's' or 'S' -> move down
 		CMP AL,73h 									;check for 's'
-		JE MOVE_LEFT_PADDLE_DOWN
+		JE MOVE_LEFT_PADDLE_DOWN					;if true move up
 		CMP AL,53h 									;check for 'S'
-		JE MOVE_LEFT_PADDLE_DOWN
-		JMP CHECK_RIGHT_PADDLE_MOVEMENT
+		JE MOVE_LEFT_PADDLE_DOWN					;if true move up
+		JMP CHECK_RIGHT_PADDLE_MOVEMENT				;DO THE SAME FOR RIGHT PLAYER BUT WITH O AND L INSTEAD OF W AND S
 
-		MOVE_LEFT_PADDLE_UP: 						;procedure to move the left paddle up
-			MOV AX,PADDLE_VELCITY 				
-			SUB PADDLE_LEFT_Y,AX 					;subtracting the PADDLE_VELCITY in current position of the paddle
+		MOVE_LEFT_PADDLE_UP: 						;Sequence to move the left paddle up
+			MOV AX,PADDLE_VELOCITY 					;Velocity Control to change fighter speed
+			SUB PADDLE_LEFT_Y,AX 					;subtracting the PADDLE_VELOCITY in current position of the paddle
 
 			MOV AX,WINDOW_BOUNDS
 			CMP PADDLE_LEFT_Y,AX 					;checking if the paddle is at the top boundary
 			JL FIX_PADDLE_LEFT_TOP_POSITION 		;if it is at the top boundary then fix the position 
-			JMP CHECK_RIGHT_PADDLE_MOVEMENT
+			JMP CHECK_RIGHT_PADDLE_MOVEMENT			;if not then go for right figher and REPEAT
 
-			FIX_PADDLE_LEFT_TOP_POSITION:
+			FIX_PADDLE_LEFT_TOP_POSITION:					
 				MOV PADDLE_LEFT_Y,AX 				;fixing paddle top position to WINDOW_BOUNDS
-				JMP CHECK_RIGHT_PADDLE_MOVEMENT
+				JMP CHECK_RIGHT_PADDLE_MOVEMENT	
 
-		MOVE_LEFT_PADDLE_DOWN: 						;procedure to move the left paddle down
-			MOV AX,PADDLE_VELCITY 					
-			ADD PADDLE_LEFT_Y,AX 					;adding the PADDLE_VELCITY in current position of the paddle
-			MOV AX,WINDOW_HEIGHT
-			SUB AX,WINDOW_BOUNDS
-			SUB AX,PADDLE_HEIGHT
+		MOVE_LEFT_PADDLE_DOWN: 						;Sequence to move the left paddle down
+			MOV AX,PADDLE_VELOCITY 					
+			ADD PADDLE_LEFT_Y,AX 					;adding the PADDLE_VELOCITY in current position of the paddle
+			MOV AX,WINDOW_HEIGHT					;bounds checks
+			SUB AX,WINDOW_BOUNDS					;Bounds value can be changed for tighter or wider boundries
+			SUB AX,PADDLE_HEIGHT					;same as move paddle up but now checks with window height paddle height and boundies
 			CMP PADDLE_LEFT_Y,AX 					;checking if the paddle is at the bottom boundary
 			JG FIX_PADDLE_LEFT_BOTTOM_POSITION 		;if it is at the bottom boundary then fix the position 
 			JMP CHECK_RIGHT_PADDLE_MOVEMENT
@@ -445,9 +513,10 @@ LevelThree ENDP
 				JMP CHECK_RIGHT_PADDLE_MOVEMENT
 
 		exit:
-			JMP EXIT_PADDLE_MOVEMENT 								;Jump to exit2
+			JMP EXIT_PADDLE_MOVEMENT 								;Jump to exit2 Intermediate jump, to avoid JUMP LIMIT EXCEEDED ERROR
 
-		;Right paddle movement
+		;Right fighter movement
+		;SAME AS ABOVE, SELF EXPLANETORY
 		CHECK_RIGHT_PADDLE_MOVEMENT:
 			;if it is 'o' or 'O' -> move up
 			CMP AL,6Fh 								;check for 'o'
@@ -462,9 +531,9 @@ LevelThree ENDP
 			JE MOVE_RIGHT_PADDLE_DOWN
 			JMP EXIT_PADDLE_MOVEMENT
 
-		MOVE_RIGHT_PADDLE_UP: 						;procedure to move the right paddle up
-			MOV AX,PADDLE_VELCITY 					
-			SUB PADDLE_RIGHT_Y,AX 					;subtracting the PADDLE_VELCITY in current position of the paddle
+		MOVE_RIGHT_PADDLE_UP: 						;sequence to move the right paddle up
+			MOV AX,PADDLE_VELOCITY 					
+			SUB PADDLE_RIGHT_Y,AX 					;subtracting the PADDLE_VELOCITY in current position of the paddle
 
 			MOV AX,WINDOW_BOUNDS
 			CMP PADDLE_RIGHT_Y,AX 					;checking if the paddle is at the top boundary
@@ -476,14 +545,14 @@ LevelThree ENDP
 				JMP EXIT_PADDLE_MOVEMENT
 
 		MOVE_RIGHT_PADDLE_DOWN:
-			MOV AX,PADDLE_VELCITY
-			ADD PADDLE_RIGHT_Y,AX 					;adding the PADDLE_VELCITY in current position of the paddle	
+			MOV AX,PADDLE_VELOCITY
+			ADD PADDLE_RIGHT_Y,AX 					;adding the PADDLE_VELOCITY in current position of the paddle	
 			MOV AX,WINDOW_HEIGHT
 			SUB AX,WINDOW_BOUNDS
 			SUB AX,PADDLE_HEIGHT
 			CMP PADDLE_RIGHT_Y,AX 					;checking if the paddle is at the bottom boundary
 			JG FIX_PADDLE_RIGHT_BOTTOM_POSITION 	;if it is at the bottom boundary then fix the position
-			JMP CHECK_RIGHT_PADDLE_MOVEMENT
+			JMP EXIT_PADDLE_MOVEMENT
 
 			FIX_PADDLE_RIGHT_BOTTOM_POSITION:
 				MOV PADDLE_RIGHT_Y,AX 				;fix the postion of the paddle
@@ -491,40 +560,45 @@ LevelThree ENDP
 
 		EXIT_PADDLE_MOVEMENT:
 
+			;AFTER MOVEMENT CALCULATIONS ARE DONE. 
+			;now we erase the old image to get ready to redraw new image (FLICKERING COUNTER MEASURE)
 
-			mov cx, PADDLE_LEFT_X
-			mov dx, NewPaddleLeftX
-			cmp cx, dx
-			jne OldMovement
-			mov cx, PADDLE_LEFT_Y
-			mov dx, NewPaddleLeftY
-			cmp cx, dx
-			je NoOldMovement
-
-		OldMovement:
-			mov cx, NewPaddleLeftX
-			mov dx, NewPaddleLeftY
+			;; LEFT PLAYER
+			mov cx, PADDLE_LEFT_X	;compare operand 1
+			mov dx, OldPaddleLeftX	;compare operand 2
+			cmp cx, dx				;check if old X coordinates == new X coordinates
+			jne OldMovement			;if not prepare to erase old 
+			mov cx, PADDLE_LEFT_Y	;same as above but for Y axis
+			mov dx, OldPaddleLeftY
+			cmp cx, dx				;check if old X coordinates == new X coordinates
+			je NoOldMovement		;if they are the same, no movement, dont redraw, save processing power
+			
+			;if it reaches this point, there had been movement , prepare to redraw
+			OldMovement:	
+			mov cx, OldPaddleLeftX	;get old X coordinates 
+			mov dx, OldPaddleLeftY	;get old Y coordinates 
 
 
 			DRAW_PADDLE_LEFT_HORIZONTAL:
 			MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,00h					;choose white as color of the pixel
+			MOV AL,00h					;choose black as color of the pixel (can be any color, make sure it is the background colour, a variable can be used)
 			MOV BH,00h					;set the page number
 			INT 10h 					;execute the configuration
 
 			INC CX 						;CX = CX + 1
-			MOV AX,NewPaddleLeftX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			MOV AX,OldPaddleLeftX		
 			add AX,PADDLE_WIDTH	
-			CMP cx,ax
-			JNG DRAW_PADDLE_LEFT_HORIZONTAL
-			mov cx, NewPaddleLeftX
+			CMP cx,ax					;CX > PADDLE_WIDTH + PADDLE_LEFT_X (if yes them new line. if no then new column)
+			JNG DRAW_PADDLE_LEFT_HORIZONTAL	
+			mov cx, OldPaddleLeftX
 			inc dx
-			MOV AX,NewPaddleLeftY					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			MOV AX,OldPaddleLeftY					
 			add AX,PADDLE_HEIGHT	
-			cmp dx,ax
+			cmp dx,ax					;DX  <  PADDLE_LEFT_Y + Height (if yes them new line. if no then EXIT DRAWING)
 			JNG DRAW_PADDLE_LEFT_HORIZONTAL
 
-		NoOldMovement:
+			NoOldMovement:		;if there was no old movement, Check for Second fighter]
+								;SAME AS LEFT FIGHTER
 			mov cx, PADDLE_RIGHT_X
 			mov dx, NewPaddleRightX
 			cmp cx, dx
@@ -533,39 +607,42 @@ LevelThree ENDP
 			mov dx, NewPaddleRightY
 			cmp cx, dx
 			je NoOldMovement2
+			;if it reaches this point, there had been movement , prepare to redraw
+			OldMovement2:
+			mov cx, NewPaddleRightX		;get old x coordinates
+			mov dx, NewPaddleRightY		;get old y coordinates
 
-		OldMovement2:
-			mov cx, NewPaddleRightX
-			mov dx, NewPaddleRightY
-
-
+			
 			DRAW_PADDLE_Right_HORIZONTAL:
 			MOV AH,0Ch					;set the configuration to writing the pixel
-			MOV AL,00h					;choose white as color of the pixel
+			MOV AL,00h					;choose black as color of the pixel (can be any color, make sure it is the background colour, a variable can be used)
 			MOV BH,00h					;set the page number
 			INT 10h 					;execute the configuration
 
 			INC CX 						;CX = CX + 1
-			MOV AX,NewPaddleRightX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			MOV AX,NewPaddleRightX		;CX > PADDLE_WIDTH + PADDLE_LEFT_X (if yes them new line. if no then new column)
 			add AX,PADDLE_WIDTH	
 			CMP cx,ax
 			JNG DRAW_PADDLE_Right_HORIZONTAL
 			mov cx, NewPaddleRightX
 			inc dx
-			MOV AX,NewPaddleRightY					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
+			MOV AX,NewPaddleRightY		;DX  <  PADDLE_LEFT_Y + Height (if yes them new line. if no then EXIT DRAWING)
 			add AX,PADDLE_HEIGHT	
 			cmp dx,ax
 			JNG DRAW_PADDLE_Right_HORIZONTAL
 
-		NoOldMovement2:
+		NoOldMovement2:      			; if there was no old movement for char 2 then exit procedure
 
     RET
     Move_Fighters ENDP
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    DrawFighters proc NEAR
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Procedure Used to Draw Fighters From PreCalculated Image Saved in Memory At>> img 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    DrawFighters proc NEAR		;draw fighter procedure
     
-		;draw lefft
+		;draw left
 		MOV CX, PADDLE_LEFT_X   	;set the width (X) up to 64 (based on image resolution)
 	    MOV DX, PADDLE_LEFT_Y  	;set the hieght (Y) up to 64 (based on image resolution)
 		mov DI, offset img  ; to iterate over the pixels
