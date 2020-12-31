@@ -21,7 +21,9 @@
 ;Calculate coordinates to centralize texts (such a P I T A)
 ;Implement space bar goes PEW PEW PEEEEEW 
 ;newgame variable reset
-;switch movement to arrow keys (NECCESSARY FOR PHASE 3)
+;switch movement to arrow keys (NECCESSARY FOR PHASE 3);
+;have all mesages be of a static size (PHASE 3? OPTIONAL)
+;AT GAME OVER: Show Scores for 5 seconds
 ;Level Modifiers (LIFE ARMOUR AND SO ON)
 ;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode 
 ;Change Health and Armour strings to images for getter looking game 
