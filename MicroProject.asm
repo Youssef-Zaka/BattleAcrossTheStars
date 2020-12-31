@@ -1,8 +1,42 @@
+
+;CAIRO UNIVERSITY FACULTY OF ENGINEERING
+;COURSE:  MICRO PROCESSOR SYSTEMS ONE 
+
+;END OF SEMSTER PROJECT
+;TEAM 8 
+
+;MEMBERS (FIVE IN TOTAL)
+;YOUSSEF MAHMOUD ZAKARIA 1180029
+;AHMED
+;OMAR
+;HAZEM
+;SHEHAB
+
+
+;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+
+;GENERAL TODOS:
+;
+;Recolour main and utility menus (grey = ya3)
+;Calculate coordinates to centralize texts (such a P I T A)
+;Implement space bar goes PEW PEW PEEEEEW 
+;newgame variable reset
+;Level Modifiers (LIFE ARMOUR AND SO ON)
+;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode 
+;Change Health and Armour strings to images for getter looking game 
+;A5er 7AGA NBOS 3LEHA >> HORIZONTAL MOVEMENT (NOT A MUST, its just nice to have)
+;we a5er 7aga bardo el keyboard rollover (example lwwwwwwwwwwww , l key was pressed first, w after, both were held together)
+;
+;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+
+
 .MODEL SMALL
 .STACK 100
 ;******  Data Segment ******
 .DATA
 ;;start of data segment 
+GAMEOVER db "GAME OVER"
+ENDGAMEOVER db ' '
 player1wins   db      "Player one WON" , '$' ;display when p1 wins
 player2wins   db      "Player two WON" , '$' ; display when p2 wins
 winner Db 0d	;used to know who the winner is, 1 or 2, if 0, no one won, variable is checked after every ball collision
@@ -17,7 +51,8 @@ lvl2 DB "Level 2",'$'	;string displayer at level selection
 lvl3 DB "Level 3",'$'	;string displayer at level selection
 PlayerName DB 15 DUP(?),'$'	;15 Bytes used to hold username, can only start with a letter    
 EnterName DB "Please Enter your name: ",0Dh,0Ah,09h, '$' 	;string displayer at Name selection
-PressEnter DB "Press ENTER key to continue",'$' 	;string displayer at Name selection
+PressEnter DB "Press ENTER key to continue";string displayer at Name selection
+ENDPRESSENTER DB '$' 	
 msg1    db      "Please select a mode" , '$' 	;string displayer at Mode selection
 msg2	    db      "press f1 for chatting mode", '$'	;string displayer at Mode selection/chat mode
 msg3	    db      "press f2 for game mode ", '$'	;string displayer at Mode selection/game mode
@@ -643,358 +678,405 @@ LevelThree ENDP
     DrawFighters proc NEAR		;draw fighter procedure
     
 		;draw left
-		MOV CX, PADDLE_LEFT_X   	;set the width (X) up to 64 (based on image resolution)
-	    MOV DX, PADDLE_LEFT_Y  	;set the hieght (Y) up to 64 (based on image resolution)
-		mov DI, offset img  ; to iterate over the pixels
+		MOV CX, PADDLE_LEFT_X   	;set the width of picture or pixel count(X)  (based on image resolution)
+	    MOV DX, PADDLE_LEFT_Y  		;set the hieght (Y) 
+		mov DI, offset img 			 ; to iterate over the pixels
 		   
-		    MOV BH,00h   	;set the page number
-	           	;Avoid drawing before the calculations
-	Drawit:	
+		    MOV BH,00h   			;set the page number
+	DrawFightersLoop:	
 	       MOV AH,0Ch   	;set the configuration to writing a pixel
-           mov al, [DI]     ; color of the current coordinates
+           mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
 	      
-	       INT 10h      	;execute the configuration
-	Start: 
-		   inc DI
-	       inc Cx       	;  loop iteration in x direction
-		   mov ax , PADDLE_LEFT_X
-		   Add ax,40
-		   cmp cx, ax
-	       Jb Drawit      	;  check if we can draw c urrent x and y and excape the y iteration
-	       mov Cx, PADDLE_LEFT_X	;  if loop iteration in y direction, then x should start over so that we sweep the grid
-	       inc DX   
-		   mov ax,	 PADDLE_LEFT_Y   	;  loop iteration in y direction
-		   add ax,40
-		   cmp dx,ax 
-	       ja  ENDING   	;  both x and y reached 00 so end program
-		   Jmp Drawit
+	       INT 10h      	;draw a pixel
+		   inc DI			;increase di to get the next pixel for the next iteration
+	       inc Cx       	; used to loop in x direction
+		   mov ax , PADDLE_LEFT_X	
+		   Add ax,PADDLE_WIDTH		
+		   cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+	       Jb DrawFightersLoop      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	       mov Cx, PADDLE_LEFT_X		;reset cx to draw a new line of pixels in the new row below the row before
+	       inc DX   					;y direction increased (goes down one row) and get ready to draw
+		   mov ax,	 PADDLE_LEFT_Y   	;  loop in y direction
+		   add ax,40					;until y location + height is smaller than dx, only then exit the loop
+		   cmp dx,ax 					; if not repeat for the next row
+	       ja  ENDING   				;  both x and y reached 0,0 so exit to draw the other fighter
+		   Jmp DrawFightersLoop			;repeat
 	ENDING:
-	;draw right
-		MOV CX, PADDLE_RIGHT_X   	;set the width (X) up to 64 (based on image resolution)
-	    MOV DX, PADDLE_RIGHT_Y  	;set the hieght (Y) up to 64 (based on image resolution)
-		mov DI, offset InverseImage - 1  ; to iterate over the pixels
+		;draw right
+		;SAME AS ABOVE BUT FOR RIGHT IMAGE
+		;INSTEAD OF DRAWING A NEW IMAGE WE CAN USE THE SAME IMAGE BUT DRAWIN IN REVERSE ORDER
+		MOV CX, PADDLE_RIGHT_X   	
+	    MOV DX, PADDLE_RIGHT_Y  	
+		mov DI, offset InverseImage - 1  ;to get the location of the last pixel in the img
 		   
-		    MOV BH,00h   	;set the page number
-	           	;Avoid drawing before the calculations
-	Drawit2:	
+		 MOV BH,00h   	;set the page number
+	DrawFightersLoop2:	
 	       MOV AH,0Ch   	;set the configuration to writing a pixel
            mov al, [DI]     ; color of the current coordinates
 	      
-	       INT 10h      	;execute the configuration
-	Start2: 
-		   dec DI
-	       inc Cx       	;  loop iteration in x direction
+	       INT 10h      	;execute the configuration 
+		   dec DI			;decrement di because we are going in the oposite direction
+	       inc Cx       	;  loop in x direction
 		   mov ax , PADDLE_RIGHT_X
 		   Add ax,40
-		   cmp cx, ax
-	       Jb Drawit2      	;  check if we can draw c urrent x and y and excape the y iteration
-	       mov Cx, PADDLE_RIGHT_X	;  if loop iteration in y direction, then x should start over so that we sweep the grid
+		   cmp cx, ax			
+	       Jb DrawFightersLoop2      		;similar comparisons to above
+	       mov Cx, PADDLE_RIGHT_X	
 	       inc DX   
-		   mov ax,	 PADDLE_RIGHT_Y   	;  loop iteration in y direction
+		   mov ax,	 PADDLE_RIGHT_Y   	
 		   add ax,39
-		   cmp dx,ax 
-	       ja  ENDING2   	;  both x and y reached 00 so end program
-		   Jmp Drawit2
-
+		   cmp dx,ax 						;similar comparisons to above
+	       ja  ENDING2   	;  both x and y reached 0,0 so end program
+		   Jmp DrawFightersLoop2
 		   ENDING2:
-		; DRAW_PADDLE_LEFT_HORIZONTAL:
-		; 	MOV AH,0Ch					;set the configuration to writing the pixel
-		; 	MOV AL,0Fh					;choose white as color of the pixel
-		; 	MOV BH,00h					;set the page number
-		; 	INT 10h 					;execute the configuration
-
-		; 	INC CX 						;CX = CX + 1
-		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-		; 	SUB AX,PADDLE_LEFT_X	
-		; 	CMP AX,PADDLE_WIDTH
-		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL
-
-        ;     inc dx
-        ;     jmp HelperDraw
-        ;     DRAW_PADDLE_LEFT_HORIZONTAL2:
-		; 	MOV AH,0Ch					;set the configuration to writing the pixel
-		; 	MOV AL,0Fh					;choose white as color of the pixel
-		; 	MOV BH,00h					;set the page number
-		; 	INT 10h 					;execute the configuration
-        ;     HelperDraw:
-		; 	INC CX 						;CX = CX + 1
-		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-		; 	SUB AX,PADDLE_LEFT_X
-        ;     add ax,2d	
-		; 	CMP AX,PADDLE_WIDTH
-		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL2
-            
-		; 	MOV CX,PADDLE_LEFT_X 		;the CX register goes back to the initial column
-		; 	INC DX 						;we advance one line
-		; 	MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
-		; 	SUB AX,PADDLE_LEFT_Y
-        ;     add ax,2d					
-		; 	CMP AX,PADDLE_HEIGHT
-		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL2
-
-        ;     inc dx 
-        ;     DRAW_PADDLE_LEFT_HORIZONTAL3:
-            
-        ;     MOV AH,0Ch					;set the configuration to writing the pixel
-		; 	MOV AL,0Fh					;choose white as color of the pixel
-		; 	MOV BH,00h					;set the page number
-		; 	INT 10h 
-        ;     INC CX 						;CX = CX + 1
-		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-		; 	SUB AX,PADDLE_LEFT_X	
-		; 	CMP AX,PADDLE_WIDTH
-		; 	JNG DRAW_PADDLE_LEFT_HORIZONTAL3		
-
-
-		; 	MOV CX,PADDLE_RIGHT_X 		;set the initial column (X)
-		; 	MOV DX,PADDLE_RIGHT_Y 		;set the initial line (Y)
-           
-		; DRAW_PADDLE_RIGHT_HORIZONTAL:
-		; 	MOV AH,0Ch					;set the configuration to writing the pixel
-		; 	MOV AL,0Fh					;choose white as color of the pixel
-		; 	MOV BH,00h					;set the page number
-		; 	INT 10h 					;execute the configuration
-
-		; 	INC CX 						;CX = CX + 1
-		; 	MOV AX,CX					;CX - PADDLE_LEFT_X > PADDLE_WIDTH (Y-> We go to the next line. N-> we continue to the next column)
-		; 	SUB AX,PADDLE_RIGHT_X		
-		; 	CMP AX,PADDLE_WIDTH
-		; 	JNG DRAW_PADDLE_RIGHT_HORIZONTAL
-
-        ;     inc dx
-        ;     MOV AH,0Ch					;set the configuration to writing the pixel
-		; 	MOV AL,0Fh					;choose white as color of the pixel
-		; 	MOV BH,00h					;set the page number
-		; 	INT 10h 	
-           
-		; 	MOV CX,PADDLE_RIGHT_X 		;the CX register goes back to the initial column
-		; 	INC DX 						;we advance one line
-		; 	MOV AX,DX					;DX - PADDLE_LEFT_Y > PADDLE_HEIGHT (Y-> We exit this procedure. N-> we continue to the next line)
-		; 	SUB AX,PADDLE_RIGHT_Y					
-		; 	CMP AX,PADDLE_HEIGHT
-		; 	JNG DRAW_PADDLE_RIGHT_HORIZONTAL
 
     RET
     DrawFighters ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Draw bullets procedure, utilizes video ram to draw directly to the screen instead of using inturupts, removes all funny flickers and artifacts in the screen
+;Please refer to LECTURE 10 to understand what i mean by video ram 
+;la2 rou7 refer to lecure 10 msh bahazar 
+;ro7t? 
+;lesa maro7tsh? 
+;tab 3shan 5atry refer we t3ala da heya nos sa3a el lecture kolaha 3la ba3daha 
+;msh hatefham 7aga mel gy 8er lama tshofha we tegy
+;yala ana mestany
+;
+;kk lesss goooo
+;The EQUATION used to calculated pixel location is (row*WindowWidth+col), So for example the location of the pixel at row 2 and colun 10 is equal to 
+; row * Window Width + col
+;  2  *      320     +  10  = 650  (location 650 in memory is where we should store the pixel info to draw  at that location on the screen)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
     DrawBullets proc NEAR
 
-            mov ax, 0A000h      ; to graphics screen
-            mov es, ax  
+            mov ax, 0A000h      ; to graphics region in memory (REFER TO LECTURE 10, tha second part right after jump types, the video ram part) 
+            mov es, ax  		;set es to point to video ram first part 
 
-            MOV AX,Bulletp11_Y 					;set the initial column (X)
-           	MOV DX,Bulletp11_X					;set the initial line (Y)
-        	mov cx, 320d
-        	mul cx					;execute the configuration
-        	add ax,Bulletp11_X
-        	mov di, ax      ; (row*320+col)
-            mov Al,0CH
-            mov cx,BulletSize       
-            rep STOSB
-        	MOV AX,Bulletp11_Y
-        	mov cx, 320d
-        	mul cx					;execute the configuration
-        	add ax,Bulletp11_X
-        	add  ax,320
-        	mov di, ax
-        	mov Al,0CH
-        	mov cx,BulletSize 
+			;DRAWING FIRST PLAYER BULLET
+            MOV AX,Bulletp11_Y 					;set the initial line (Y) in ax
+           	MOV DX,Bulletp11_X					;set the initial line (X) in dx
+        	mov cx, WINDOW_WIDTH				;set cx to 320, window width 
+        	mul cx								;mul ax by cx (Y location or row * window width or 320)
+        	add ax,Bulletp11_X					;add column
+        	mov di, ax      ; (row*320+col)  	;set di with the exact location to draw
+            mov Al,0CH							;light red pixel colour 
+            mov cx,BulletSize       			;loop to write bullet size number of pixels 
+            rep STOSB							;repeat store single byte and dec cx untill cx = 0
+        	MOV AX,Bulletp11_Y					;Repeat as above but add windowwidth to location (as if going to new line)
+        	mov cx, WINDOW_WIDTH				;put 320 in cx
+        	mul cx								;mul ax with cx just like above 
+        	add ax,Bulletp11_X					;add column
+        	add  ax,WINDOW_WIDTH				;add window width to get the next row 
+        	mov di, ax							;set di with new location		
+        	mov Al,0CH							;light red pixel colour 
+        	mov cx,BulletSize 					;loop to write bullet size number of pixels
         	rep STOSB
+										;repeat store single byte and dec cx untill cx = 0
+			;DRAWING SECOND PLAYER BULLET
+			;EXACTLY THE SAME AS ABOVE 
+			;VERY VERY IMPORTANT NOTE: 
+			;this drawing method directly affects collision calculations
 
-			MOV AX,Bulletp12_Y 					;set the initial column (X)
-           	MOV DX,Bulletp12_X					;set the initial line (Y)
-        	mov cx, 320d
+			MOV AX,Bulletp12_Y 					;set the initial line (Y) in ax
+           	MOV DX,Bulletp12_X					;set the initial line (X) in dx
+        	mov cx, WINDOW_WIDTH
         	mul cx					 
         	add ax,Bulletp12_X
         	mov di, ax      ; (row*320+col)
-            mov Al,0DH
+            mov Al,0DH		;DRAW PURPLE BULLETS INSTEAD
             mov cx,BulletSize       
             rep STOSB
         	MOV AX,Bulletp12_Y
-        	mov cx, 320d
+        	mov cx, WINDOW_WIDTH
         	mul cx					
         	add ax,Bulletp12_X
-        	add  ax,320
+        	add  ax,WINDOW_WIDTH
         	mov di, ax
-        	mov Al,0DH
+        	mov Al,0DH		;DRAW PURPLE BULLETS INSTEAD
         	mov cx,BulletSize 
         	rep STOSB
             RET
     DrawBullets ENDP
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;MOVE BULLETS PROCEDURE
+	;;;
+	;____________________________________________________________________THIS PROCEDURE IS THE MOST IMPORTANT IN THE ENTIRE PROJECT___________________________________________________________;;;;;;;;;;;;;;;;;;;;;;;
+	;;;
+	;
+	;Here are the calculations and checks that are done in this procedure:
+	;
+	;1- Erasing Old Bullets in preparation of drawing new ones (BOTH PLAYERS) 
+	;2- CALCULATING New Bullet Location of both Player bullets
+	;3- Check if there was a collision between a bullet and a player
+	;4- if there is indeed a collision decrement player health accordingly 
+	;5- TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO: : : IF both players lose at the same time, initiate the DRAW Protocol (Sounds Fancy (bsot spoiled princess))
+	;6- If a bullet Becomes Out of bounds (outside window dimensions, reset its position
+	;7- TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO: :Check collisions with power ups, asign power up to crosponding player, if draw, apply to both or dont apply at at all 
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     MOVE_Bullet PROC NEAR					;process the movemment of the bullet
 
-		 mov ax, 0A000h      ; to graphics screen
-            mov es, ax  
+		;first Erase old bullet
+			mov ax, 0A000h      ;to graphics screen
+            mov es, ax  		;Refer to LECTURE 10			
+            MOV AX,Bulletp11_Y 	;set the initial line (Y)
+           	MOV DX,Bulletp11_X	;set the initial Column (X)
 
-            MOV AX,Bulletp11_Y 					;set the initial column (X)
-           	MOV DX,Bulletp11_X					;set the initial line (Y)
-        	mov cx, 320d
-        	mul cx					;execute the configuration
+			;PLEASE REFER TO DRAW BULLET PROCEDURE ABOVE, STEPS ARE REPEATED EXACTLY BUT IN BACKGROUND OR BLACK COLOUR
+			;PLEASE REFER TO DRAW BULLET PROCEDURE ABOVE, STEPS ARE REPEATED EXACTLY BUT IN BACKGROUND OR BLACK COLOUR
+			;PLEASE REFER TO DRAW BULLET PROCEDURE ABOVE, STEPS ARE REPEATED EXACTLY BUT IN BACKGROUND OR BLACK COLOUR
+
+        	mov cx, WINDOW_WIDTH 
+        	mul cx					
         	add ax,Bulletp11_X
-        	mov di, ax      ; (row*320+col)
-            mov Al,00H
+        	mov di, ax      	;(row * windowWidth +col)
+            mov Al,00H			;black colour
             mov cx,BulletSize       
-            rep STOSB
-        	MOV AX,Bulletp11_Y
-        	mov cx, 320d
-        	mul cx					;execute the configuration
+            rep STOSB			;draw bullet size times 
+        	MOV AX,Bulletp11_Y	;repeat for next row 
+        	mov cx, WINDOW_WIDTH
+        	mul cx				
         	add ax,Bulletp11_X
-        	add  ax,320
+        	add  ax,WINDOW_WIDTH
         	mov di, ax
-        	mov Al,00H
+        	mov Al,00H			;black colour
         	mov cx,BulletSize 
-        	rep STOSB
-			MOV AX,Bulletp12_Y 					;set the initial column (X)
-           	MOV DX,Bulletp12_X					;set the initial line (Y)
-        	mov cx, 320d
-        	mul cx					;execute the configuration
+        	rep STOSB			;Draw bullet sie times 
+
+			;REPEAT FOR PLAYER 2 BULLET
+
+			MOV AX,Bulletp12_Y 					
+           	MOV DX,Bulletp12_X					
+        	mov cx, WINDOW_WIDTH
+        	mul cx					
         	add ax,Bulletp12_X
-        	mov di, ax      ; (row*320+col)
+        	mov di, ax      
             mov Al,00H
             mov cx,BulletSize       
             rep STOSB
         	MOV AX,Bulletp12_Y
-        	mov cx, 320d
-        	mul cx					;execute the configuration
+        	mov cx, WINDOW_WIDTH
+        	mul cx					
         	add ax,Bulletp12_X
-        	add  ax,320
+        	add  ax,WINDOW_WIDTH
         	mov di, ax
         	mov Al,00H
         	mov cx,BulletSize 
         	rep STOSB
+			;ERASION END
 
-		MOV AX,Bullet_VELOCITY_X
-		ADD Bulletp11_X,AX 					;move the bullet horizontally
-		MOV AX,WINDOW_WIDTH
-		SUB AX,BulletSize
-		SUB AX,WINDOW_BOUNDS
-		CMP Bulletp11_X,AX					;Bulletp11_X is compared with the right boundaries of the screen
-		JG FAR ptr RESET_POSITION 			;if it is greater, reset position
-		MOV AX,Bullet_VELOCITY_X
-		sub Bulletp12_X,AX 					;move the bullet horizontally
+
+		; NEXT we move both bullets in thier respective directions
+		MOV AX,Bullet_VELOCITY_X	;add bullet velocity in X direction to its current X coordinate
+		ADD Bulletp11_X,AX 			;move the bullet horizontally (from left to right)
+		MOV AX,WINDOW_WIDTH			;Get Window Width in ax
+		SUB AX,BulletSize			;Subtract Bullet size from it
+		SUB AX,WINDOW_BOUNDS		;Subtract Window Bounds
+		CMP Bulletp11_X,AX			;Bulletp11_X is compared with the right boundaries of the screen
+		JG FAR ptr RESET_POSITION 	;if it is greater, reset position
+		BACKtoBulletTwo:
+		MOV AX,Bullet_VELOCITY_X	;The Same For bullet of player 2 
+		sub Bulletp12_X,AX 			;move the bullet horizontally in negative direction (from right to left)
 		;check if it has passed the left boundaries (Bulletp11_X < 0 + WINDOW_BOUNDS)
 		;if its colliding restart its position
 		MOV AX,WINDOW_BOUNDS
-		CMP Bulletp12_X,AX 					;Bulletp12_X is compared with the left boundaries of the screen
-		JL RESET_POSITION2 				;if it is less, reset position
+		CMP Bulletp12_X,AX 			;Bulletp12_X is compared with the left boundaries of the screen
+		JL RESET_POSITION2 			;if it is less, reset position 
+		; if it reaches this point then no POSITION RESETS were neccesary, then 
+		jmp contafterjmp ;now we can assume they are within bounds, thus we do the within bounds calculations
+						 ;contafterjmp guarantees that we Dont reset pos if they are in bounds
+	
+		RESET_POSITION: 
+		Call RESET_Bullet_POSITION ;Procedure that returns Bullet to Blasters of the ship (weird right? WRONG)
+									;this way a player can have only one active bullet at a time
+									;if players can shoot alot, even with a reload period, they can easily CHEASE the game
+									;CHEASY WINS is when you win using some unfair way, say a bug or a glitch
+									;we dont want that now do we? NOPE WE DONT 
+									;Which is Why my good friend we must limit the player's prowess
+									;especially on dosbox where the screen is alreadt so tiny with such small dimensions 
+									;ma3lesh tawelt 3lek :D 
+		JMP BACKtoBulletTwo		;Go back to Checking second bullets		
 
-;;		
-		jmp contafterjmp
-		
-		RESET_POSITION:
-		Call RESET_Bullet_POSITION
-		RET
-		RESET_POSITION2:
+		RESET_POSITION2:			;SAME AS FOR BULLET ONE, But after this one, it exits procedure, because if ball is out of bounds
+										;then it cant hit ships or power ups, thus no need to do any more calculations 
 		Call RESET_Bullet_POSITION2
-		RET
+		RET							;exit procedure if out of bounds (Will not get called other wise)
+
+
+		;If it reaches this point then the ball is definetly inside bounds, do impotant collison and power ups calculations 
 		contafterjmp:
-		MOV AX,PADDLE_RIGHT_X
-		add ax,10
-		CMP Bulletp11_X,AX
-		JL CHECK_COLLISION_WITH_LEFT_PADDLE					;if there is no collision exit the procedure
+		;now do do fighter=bullets collision checks
+		;we start with right figer 
+		MOV AX,PADDLE_RIGHT_X	;get X coardinate of right fighter
+		add ax,10				;ADD 10, because without it in narrow sceen makes the game rippy (Gives the player more wiggle room)
+		CMP Bulletp11_X,AX		;compare between the two, if bullet location is greater, then there might be collision
+									;to make sure we check the y location
+									;if however it is in fact lower, then there can't be collision, check for left fighter now 
+		JL CHECK_COLLISION_WITH_LEFT_PADDLE		;if there is no collision then we check for left fighter
 
-		
-		MOV AX,Bulletp11_Y
-		CMP AX,PADDLE_Right_Y
-		JNG CHECK_COLLISION_WITH_LEFT_PADDLE					;if there is no collision exit the procedure
+		;if it reaches this point then there might be collision with Y axis
+		MOV AX,Bulletp11_Y		;get Y coordinates of bullet
+		CMP AX,PADDLE_Right_Y	;compare it to Y coor of fighter, if it is lower : no collision : Check Left Fighter 
+									;if there is higher there might be collision
+		JNG CHECK_COLLISION_WITH_LEFT_PADDLE	;if there is no collision Check Left Fighter
 
-		MOV AX,PADDLE_Right_Y
-		ADD AX,PADDLE_HEIGHT
-		CMP Bulletp11_Y,AX
-		JG CHECK_COLLISION_WITH_LEFT_PADDLE					;if there is no collision exit the procedure
+		;if it reaches this point then there might be collision
+		;now we know it is in the X axis collsion range
+		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
+		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
+		;If Not then No collision, we check for left paddle 
+		MOV AX,PADDLE_Right_Y	;get y coordinate of fighter
+		ADD AX,PADDLE_HEIGHT	;add fighter height, now we have the last Y pixel of the fighter
+		CMP Bulletp11_Y,AX		;Check and see if bullet Y is less than Fighter Y + Fighter Height
+		JG CHECK_COLLISION_WITH_LEFT_PADDLE		;if there is no collision Check Left Fighter
 
-		;if it reaches this point the ball is colliding with the right paddle
-		;
-        ;
+		;if it reaches this point the ball is colliding with the right paddle For Sure
+		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
+		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+		;decrement player armour
+		;check if armour is zero
+        Dec Player2Health	;decrement player health
+		cmp Player2Health , 48d ;Check if heakth is zero, ZERO IN ASCII is 48
+								; we use ascii instead of 0 because it saves calculations when printing these values in status bar 
+		je ENDGAME1				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODO)
+		CALL RESET_Bullet_POSITION	;if there is collision return bullet to fighter to prepare for new shoot 
 
-        Dec Player2Health
-		cmp Player2Health , 48d
-		je ENDGAME1
-		CALL RESET_Bullet_POSITION
-
-
+		;SAME AS ABOVE; With some minor tweeks
 		CHECK_COLLISION_WITH_LEFT_PADDLE:
-		MOV AX,PADDLE_LEFT_X
+		MOV AX,PADDLE_LEFT_X		
 		add ax,PADDLE_WIDTH 
-		CMP AX,Bulletp12_X
-		JNG EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
+		sub ax,10d
+		CMP AX,Bulletp12_X 	;compare bullet x with fighter x + fighter width () - 10 (to acheive the same distance as right fighter)
+		JNG EXIT_BALL_COLLISION	;Exit proc if there is no collision
 
 		MOV AX,Bulletp12_Y
 		ADD AX,BulletSize
-		CMP AX,PADDLE_LEFT_Y
-		JNG EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
+		CMP AX,PADDLE_LEFT_Y	;same as right fighter
+		JNG EXIT_BALL_COLLISION	;Exit proc if there is no collision
 
 		MOV AX,PADDLE_LEFT_Y
 		ADD AX,PADDLE_HEIGHT
-		CMP Bulletp12_Y,AX
-		JNL EXIT_BALL_COLLISION	;if there is no collision check for the left paddle
+		CMP Bulletp12_Y,AX 		;same as right fighter
+		JNL EXIT_BALL_COLLISION	;Exit proc if there is no collision
 
-		;if it reaches this point the ball is colliding with the left paddle
-
-		Dec Player1Health
-		cmp Player1Health , 48d
-		je ENDGAME2
-		CALL RESET_Bullet_POSITION2 	
-
+		;if it reaches this point the ball is colliding with the left paddle For sure
+		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+		;decrement player armour
+		;check if armour is zero
+		Dec Player1Health	;decrement player health
+		cmp Player1Health , 48d	;Check if heakth is zero, ZERO IN ASCII is 48
+								; we use ascii instead of 0 because it saves calculations when printing these values in status bar
+		je ENDGAME2				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODOTODOTODOTODOTODOTODOTODOTODOTODO)
+		CALL RESET_Bullet_POSITION2 ;if there is collision return bullet to fighter to prepare for new shoot
+		;If the bullet is colliding with a fighter then it cant be colliding with anything else
+		;thus exit procedure
         RET
         ;
         ;
 		;exit this procedure
-		ENDGAME1:
-		mov winner,1
-		Call PLAYERWINS
-		jmp EXIT_BALL_COLLISION
-		ENDGAME2:
-		mov winner ,2
-		Call PLAYERWINS
-		EXIT_BALL_COLLISION:
+		ENDGAME1:	;if the winner is player 1
+		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
+		mov winner,1	;set winner variable to 1
+		Call PLAYERWINS	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
+		jmp EXIT_BALL_COLLISION	;exit proc
+		ENDGAME2:	;	if player 2 wins
+		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
+		mov winner ,2	;set winner var to 2
+		Call PLAYERWINS ;Call the THE GAME OVER PROTOCOL
+		EXIT_BALL_COLLISION: ;exit proc
 	    RET
-
-		
-
 	MOVE_Bullet ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-PLAYERWINS PROC NEAR
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Player Wins Proc 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-mov al, 03h
-	mov ah, 0
-	int 10h
+PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL 
 
-MOV AX,0600H                       
-    MOV BH,71H
-    MOV CX,0000H
-    MOV DX,184FH
-    INT 10H
+	 CALL StatusBar
+	 ;;draw GAME OVER in middle of screen using 13h/10h int
+	mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
+	mov bh, 0				;Page Number
+	mov bl,  00001101b		;Attributes : Green color on black background 
+	mov cx, offset ENDGAMEOVER - offset GAMEOVER  ; calculate message size for loop 			
+	mov dh, 2d				;row 2
+	mov dl,15D				;Collumn number 
+	push DS 				;neccesary for inturupt not to break the code
+	pop es					; es = ds
+	mov bp, offset GAMEOVER	; bp GAMEOVER msg ofsset, es and bp used to print strings
+	mov ah, 13h				;inturupt 13h/10h
+	int 10h					;perform inturupt
 
-	 ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
+	 ;;draw PRess ENter to Cont in middle of screen using 13h/10h int
+	mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
+	mov bh, 0				;Page Number
+	mov bl,  00001101b		;Attributes : Green color on black background 
+	mov cx, offset ENDPRESSENTER - offset PressEnter ; calculate message size for loop 			
+	mov dh, 6d				;row 2
+	mov dl,8D				;Collumn number 
+	push DS 				;neccesary for inturupt not to break the code
+	pop es					; es = ds
+	mov bp, offset PressEnter	; bp = player 1 health msg ofsset, es and bp used to prng strings
+	mov ah, 13h				;inturupt 13h/10h
+	int 10h					;perform inturupt
+
+	;get enter from user
+	GetInputWin0:
+    mov     ah, 7  ;take input
+	int     21h        
+    cmp al,	0Dh ;check for enter
+    jne GetInputWin0	;not enter, wait for another input
+
+	;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+	;CHANGE THE BELOW CODE TO MAKE IT LOOK BETTER
+	;bellow comments FOR THE REST OF THIS PROCEDURE ONLY are not accurate and some are even RANDOM 
+	;Will add comments for the new code with the better looks
+
+
+	mov al, 03h  ;clear screen, set video mode to TEXT Mode 80x25 16 colours 8 pages 
+	mov ah, 0		
+	int 10h		 ;00 ah / 10h = TEXT Mode
+
+	 ;clear screen, blue pen grey background
+    MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
+    MOV BH,71H				;set page number
+    MOV CX,0000H			;colour atributes
+    MOV DX,184FH			;colour atributes
+    INT 10H					;procede with inturupt
+
+	;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
     MOV DX,0817H   ; X axis = 17, Y = 8
     INT 10H    
 
-	cmp winner,2
-	je TwoWon 
-	mov dx, Offset player1wins 
+	cmp winner,2 ;check which player won to display appropriate String
+	je TwoWon 		;if 2 then jump there
+	mov dx, Offset player1wins 	;get player one won string
 	mov     ah, 09h
-	int     21h
+	int     21h	;display string 
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
     MOV DX,0D17H ; X axis = 17, Y = D
     INT 10H   
     ;print msg
-    mov dx, Offset PressEnter 
+    mov dx, Offset PressEnter ;get press enter string 
 	mov     ah, 09h
-	int     21h
+	int     21h		;print it 
 
-
+	;check user input 
 	GetInputWin:
     mov     ah, 7  ;take input
 	int     21h        
-    cmp al,	0Dh
-    jne GetInputWin
-	jmp Returnwinner
+    cmp al,	0Dh ;check for enter
+    jne GetInputWin	;not enter, wait for another input
+	jmp Returnwinner	;EXIT PROTOCOL
 	TwoWon:
 	mov dx, Offset player2wins 
 	mov     ah, 09h
@@ -1019,30 +1101,51 @@ Returnwinner:
 RET
 PLAYERWINS ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-RESET_Bullet_POSITION proc NEAR
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;RESET Bullet Position Procedure
+;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+;
+;TODO: IMPLEMENT SPACE BAR PEW PEW PEW
+;
+;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-   		MOV AX,PADDLE_LEFT_X 			
-		MOV Bulletp11_X,AX 					;setting current X-coordinate of the ball to BALL_ORIGINAL_X
+RESET_Bullet_POSITION proc NEAR				;Procedure that might change later, for now resets bullet to blaster
+
+   		MOV AX,PADDLE_LEFT_X
+		add AX,PADDLE_WIDTH 				;make it shoot from center of blaster > +(width)	
+		MOV Bulletp11_X,AX 					;setting current X-coordinate of the bullet to blasters of fighter1
 
 		MOV AX,PADDLE_LEFT_Y
-		add ax,19
-		MOV Bulletp11_Y,AX 					;setting current Y-coordinate of the ball to BALL_ORIGINAL_X
-
-
+		add ax,19							;make it shoot from center of fighter (height/2 - 1)
+		MOV Bulletp11_Y,AX 					;setting current Y-coordinate of the bullet to blasters of fighter1 
+											;EXIT PROCEDURE
 RET
 RESET_Bullet_POSITION ENDP
+
+;SAME AS ABOVE WITH MINOR TWEEKS (cuz of opposite directions)
 RESET_Bullet_POSITION2 proc NEAR
 
-   		MOV AX,PADDLE_RIGHT_X 			
-		MOV Bulletp12_X,AX 					;setting current X-coordinate of the ball to BALL_ORIGINAL_X
+   		MOV AX,PADDLE_RIGHT_X 				
+		sub ax, BulletSize					;becuase x coordinate of bullet is it's rightmost upmost point
+											;so we need to subtract its size to make it shoto similar to fighter 1
+		MOV Bulletp12_X,AX 					;setting current X-coordinate of the bullet to blasters of fighter2 
 
 		MOV AX,PADDLE_RIGHT_Y
-		add ax,19
-		MOV Bulletp12_Y,AX 					;setting current Y-coordinate of the ball to BALL_ORIGINAL_X
+		add ax,19							;make it shoot from center of fighter (height/2 - 1)
+		MOV Bulletp12_Y,AX 					;setting current Y-coordinate of the bullet to blasters of fighter2 
 
-
+											;EXIT PROCEDURE
 RET
 RESET_Bullet_POSITION2 ENDP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;CLEAR SCREEN PROCEDURE : GENERAL PURPOSE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	CLEAR_SCREEN PROC NEAR 				;procedure to clear the screen by restarting the video mode
 
@@ -1054,18 +1157,30 @@ RESET_Bullet_POSITION2 ENDP
 		MOV BH,00h						;to the background color
 		MOV BL,00h 						;choose black as background
 		INT 10h 						;execute the configuration
-
+		;EXIT PROCEDURE
 		RET
 	CLEAR_SCREEN ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;GET PLAYER NAME (FIRST THING THE PLAYER SEES)
+;
+;TODO: MAKE IT LOOK BETTER
+;PRINT WELCOME MESSAGE WITH PLAYER NAME 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;Procedure used to get player name
-    GetPlayerName proc NEAR
-    MOV AX,0600H                       
+
+;;
+;REFER TO CHOOSELEVEL PROCEDURE, PRINTING IN THE SAME EXACT WAY
+;;
+
+    GetPlayerName proc NEAR		
+    MOV AX,0600H                  
     MOV BH,71H
     MOV CX,0000H
     MOV DX,184FH
-    INT 10H
+    INT 10H			;grey background text mode 80x25 8 pages
     ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
@@ -1089,75 +1204,113 @@ RESET_Bullet_POSITION2 ENDP
     MOV BH,00
     MOV DX,0A17H ; X axis = 17, Y = A
     INT 10H   
-    GetInput:
+
+	;;get input from user
+	;check if it is a letter because first charachter in the name must be a letter
+	;If not Dont take input, if yes take input
+
+    GetInput:	;loop label
     mov     ah, 7  ;take input
-	int     21h        
-    cmp al,'A'
+	int     21h     
+
+	;check if it is in the range between A and Z, if not check between a and z (LOWERCASE)   
+    cmp al,'A'	
     jb GetInput
-    cmp al,'Z'
-    Ja IsLetter
-    Letter:
+    cmp al,'Z'  ;if between A and Z, it is indeed a letter continue, if not, jump to isletter to check LOWERCASE
+    Ja IsLetter	;go to isleter to check lower case if not uppercase
+    Letter:		;if it reaches here then it is infact  a letter
     ;display the input
     mov     ah, 2  
 	mov     dl, al
-    int     21h 
+    int     21h 	;iturupt used to display a char where  dl contains the charachter and use 2h ah/21h interupt
     ;put first letter of player name in variable
     mov PlayerName,al
-    mov cx,1
-    JMP GetRestOfName
+    mov cx,1	;initiate a counter that stops taking input when it reaches 16 (16-1 = 15, as in max username length)
+    JMP GetRestOfName ;Get the rest of th name, doesnt need to check for letters anymore
+
+	;the is letter check sequence for lowercase
     IsLetter:
-    cmp al, 'a'
+    cmp al, 'a'		
     jb GetInput
-    cmp al, 'z'
-    ja GetInput
-    JMP Letter
+    cmp al, 'z'		
+    ja GetInput		;if it is outside the range then not a letter, repeat to get another input
+    JMP Letter		;if it is indeed a letter then display it and jump to get Rest of letter
+
+	;back space implementation
+	;HOW ITS DONE
+	;First move cursor one step back
+	;Type SPACE (will overwrite old letter with blank space)
+	;move cursor back one step again (because it would have moved forward from typing space)
+	;now this visually removed the letter, but it it didnt remove it from memory
+	;to remove from memory we overwrite its location with a Dollar sign $ (as in a soudo remove)
+	;Get ready to take new input
+
     BackSpace: 
-    dec cx
-    mov di,cx
-    mov PlayerName[di] , '$'
-    mov     ah, 2  
-	mov     dl, 8d
-    int     21h 
+    dec cx	; Counter is decremented (because the erased letter would have incremented it)
+    mov di,cx	;move cx to di to set di to the location of the letter to be removed
+    mov PlayerName[di] , '$'	;Type in Dollar sign instead of old value
+    mov     ah, 2  	
+	mov     dl, 8d	
+    int     21h 		;Do A BAckspace
     mov     ah, 2  
 	mov     dl, 32d
-    int     21h 
+    int     21h 		;Do a Normal space (to visually overwrite the letter)
     mov     ah, 2  
-	mov     dl, 8d
+	mov     dl, 8d		;DO backspace again to get back to old cursor position
     int     21h 
-    cmp cx,0
+    cmp cx,0			;check if CX is zero (if it is, then the first letter was the one deleted)
+						;we jump to get input to make sure the user inputs a letter not a charechter 
+						;if not then get back to getting rest of name
     JE GetInput
+
+
     GetRestOfName:
     mov     ah, 7  ;take input
 	int     21h 
     cmp al, 13d ; check if user pressed enter
-    JE EndofGetPlayerName
-    cmp al,8d
-    jE BackSpace
+    JE EndofGetPlayerName	;if user pressed enter, dont take more values, jump to end 
+    cmp al,8d				;check if backspace
+    jE BackSpace			;initiate backspace protocoles
     cmp cx,15 ;check if the name size limit reached (15 chars)
-    JE GetRestOfName
-    mov     ah, 2  
+    JE GetRestOfName	;if it did,, dont save it and wait for enter key
+    mov     ah, 2  		;if it did not, then save it to variable
 	mov     dl, al
-    int     21h 
+    int     21h 		;display it to the screen
     mov di,cx
-    mov PlayerName[di] , al
+    mov PlayerName[di] , al	;save to variable
     inc cx  
-    JMP GetRestOfName
-    Dolla:
-    mov di,cx
-    mov al,'$'
-    mov PlayerName[di] , al
-    jmp REtGetPlayerName
-    EndofGetPlayerName:
-    cmp cx,15
-    Jb Dolla 
-    REtGetPlayerName:
+    JMP GetRestOfName	;repeat
+    
+	;sequence used to put a dollar sign at the end of the name if it was shorter than 15 chars
+	;refer to variable in DATA SEGMENT, there is a dollar sign right after the name's 15 chars
+	Dolla:
+    mov di,cx	
+    mov al,'$'	
+    mov PlayerName[di] , al	;put a dolla sign at end of name
+    jmp REtGetPlayerName	;move to end of Protocol
+
+
+    EndofGetPlayerName: ;if user pressed enter then:
+    cmp cx,15			;check if user input is less than 15 chars
+    Jb Dolla 			;if yes jump to dolla sequence to add $ at its end
+    REtGetPlayerName:	;if it was 15 then exit without doing anything
     RET
     GetPlayerName ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;Following procedure used to draw the main menu and ask user which mode to play
-    MainMenu proc NEAR
-	mov winner,0
-	mov al, 03h
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Following procedure used to draw the main menu and ask user which mode to play
+;TODO MAKE IT LOOK BETTER
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	MainMenu proc NEAR
+
+	mov winner,0 ;reset winner back to zero, TODO: further other variable resets need to be done
+
+	;TODO: Variable resets
+
+	;THE FOLLOWING IS VERY SIMILAR TO LEVEL SELECTION MENU, FURTHER IMPROVMENTS MUST BE DONE
+
+	mov al, 03h	 ;go to text mode 
 	mov ah, 0
 	int 10h
  ;Clear entire screen and set new grey background and new words will be blue
@@ -1208,7 +1361,7 @@ RESET_Bullet_POSITION2 ENDP
     MOV DX,9D17H ; X axis = 17, Y = D
     INT 10H    
 
-    ;main loop, checks for input (heya delwa2ty be tetcheck 3la 1,2, we 3 , el mafrod te check 3la f1, f2, we ESC
+    ;main loop, checks for input (f1 f2 esc)
     getnum:
     mov     ax, 1  ;take input
 	int     16h       
@@ -1220,10 +1373,11 @@ RESET_Bullet_POSITION2 ENDP
 	jE     StartGameMode 
     cmp     ah, 01h
 	jE     Escape   
-    JMP getnum
+    JMP getnum ;repeat till you get a valid input
+
     StartGameMode: CALL GameMode
     jmp RetMainMenu
-    StartChatMode: 
+    StartChatMode: 	;PHASE 3 ;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3;PHASE 3
     jmp RetMainMenu
     Escape:
     ;Clear entire screen and set new grey background and new words will be blue
@@ -1247,9 +1401,11 @@ RESET_Bullet_POSITION2 ENDP
     MOV BH,00
     MOV DX,8817H   ; X axis = 17, Y = 8
     INT 10H    
-    MOV AH,4CH          ;Inturupt is ended and control is back to the system 
+    MOV AH,4CH          ;Control is back to operating system, Now the Program has successfully been exited
     INT 21H
 
+	;End of Main Menu Procedure
+	
     RetMainMenu:
     RET
     MainMenu ENDP
@@ -1266,3 +1422,6 @@ RESET_Bullet_POSITION2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;end of program code seg
+;
+;
+;الحمد لله
