@@ -16,12 +16,12 @@
 
 ;GENERAL TODOS:
 ;
-;SWITCH TO 16 COLORS ONLY IMAGES
-;Recolour main and utility menus (grey = ya3 GREY > BLACK) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURRENTLY WORKING ON THIS)
-;TEXT COLOR > WHITE / GREEN / ORANGE / RED
-;Calculate coordinates to centralize texts (such a P I T A)
+;SWITCH TO 16 COLORS ONLY IMAGES and smaller pixels
+;Recolour main and utility menus (grey = ya3 GREY > BLACK) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
+;TEXT COLOR > WHITE / GREEN / ORANGE / RED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
+;Calculate coordinates to centralize texts (such a P I T A)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;Implement space bar goes PEW PEW PEEEEEW 
-;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>	(DONE)
+;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;switch movement to arrow keys (NECCESSARY FOR PHASE 3)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE);
 ;have all mesages be of a static size (PHASE 3? OPTIONAL)
 ;AT GAME OVER: Show Scores for 5 seconds >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
@@ -55,11 +55,12 @@ lvl2 DB "Level 2",'$'	;string displayer at level selection
 lvl3 DB "Level 3",'$'	;string displayer at level selection
 PlayerName DB 15 DUP(?),'$'	;15 Bytes used to hold username, can only start with a letter    
 EnterName DB "Please Enter your name: ",0Dh,0Ah,09h, '$' 	;string displayer at Name selection
+CREDITS DB "BY CUFE _ MP1 _ TEAM _ 8",'$'
 PressEnter DB "Press ENTER key to continue";string displayer at Name selection
 ENDPRESSENTER DB '$' 	
 msg1    db      "Please select a mode" , '$' 	;string displayer at Mode selection
-msg2	    db      "press f1 for chatting mode", '$'	;string displayer at Mode selection/chat mode
-msg3	    db      "press f2 for game mode ", '$'	;string displayer at Mode selection/game mode
+msg2	    db      "press F1 for Chatting mode", '$'	;string displayer at Mode selection/chat mode
+msg3	    db      "press F2 for Game mode ", '$'	;string displayer at Mode selection/game mode
 msg4	    db      "press ESC to exit", '$'	;string displayer at Mode selection / exit program
 msg0 db      "Thank you for playing our game, press any key to exit",0Dh,0Ah,09h, '$'	;string displayer when exiting program
 WINDOW_WIDTH DW 140h				;the width of the window (320 pixels)
@@ -1343,6 +1344,18 @@ RESET_Bullet_POSITION2 ENDP
     MOV CX,0000H
     MOV DX,184FH
     INT 10H			;grey background text mode 80x25 8 pages
+
+
+	MOV AH,02H
+    MOV BH,00
+    MOV DX,1701H   ; X axis = 17, Y = 8
+    INT 10H    
+    ;print msg
+    mov dx, Offset CREDITS 
+	mov     ah, 09h
+	int     21h
+
+
     ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
