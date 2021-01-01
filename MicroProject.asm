@@ -19,7 +19,7 @@
 ;Recolour main and utility menus (grey = ya3)
 ;Calculate coordinates to centralize texts (such a P I T A)
 ;Implement space bar goes PEW PEW PEEEEEW 
-;newgame variable reset
+;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>	(DONE)
 ;switch movement to arrow keys (NECCESSARY FOR PHASE 3);
 ;have all mesages be of a static size (PHASE 3? OPTIONAL)
 ;AT GAME OVER: Show Scores for 5 seconds
@@ -87,11 +87,12 @@ OldPaddleLeftY DW ?					;Old X position of the left paddle or fighter or space s
 
 PADDLE_RIGHT_X DW 280d 				;current X position of the right paddle or fighter or space ship, call it whatever
 PADDLE_RIGHT_Y DW 100D 				;current X position of the right paddle or fighter or space ship, call it whatever
-NewPaddleRightX DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
-NewPaddleRightY DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
+OldPaddleRightX DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
+OldPaddleRightY DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
 
 PADDLE_WIDTH DW 40d					;default width of the paddle, depends on picture width (horizontal pixels count)
 PADDLE_HEIGHT DW 40d				;default height of the paddle,  depends on picture height (Vertical pixels count)
+
 PADDLE_VELOCITY DW 05h 				;default velocity of the paddle or fighter or space ship, call it whatever
 Player1H DB 'Health'				;String to be displayed at status bar
 EndPlayer1H Db ' '					;Used to print above string
@@ -490,9 +491,9 @@ LevelThree ENDP
 		mov ax, PADDLE_LEFT_Y	;as above for y axis
 		mov OldPaddleLeftY, ax	
         mov ax, PADDLE_RIGHT_X	;DO THE SAME FOR PLAYER 2
-		mov NewPaddleRightX, ax
+		mov OldPaddleRightX, ax
 		mov ax, PADDLE_RIGHT_Y
-		mov NewPaddleRightY, ax
+		mov OldPaddleRightY, ax
         
 		;check if any key is being pressed and check if it is the move key(if not check the other player)
 		MOV AH,01h	;get key pressed BUT DO NOT WAIT FOR A KEY
@@ -504,22 +505,19 @@ LevelThree ENDP
 		;; TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
 		;; TODO : Check for f4 instead of esc, and if so initiate end game sequence 
 		;get the key that was pressed and act accordingly
-		MOV AH,00h  ;get key wait for user
+		MOV AH,00h  ;get key from buffer
 		INT 16h 	;00ah/16h
 		CMP     AL, 1Bh 							;check for 'Esc' 
 		JZ      exit 								;Jump to exit if 'Esc' is pressed
 
-		;if it is 'w' or 'W' -> move up for left player
-		CMP AL,77h 									;check for 'w'
-		JE MOVE_LEFT_PADDLE_UP						;if true move up
-		CMP AL,57h 									;check for 'W'
+		;if it is up arrow  -> move up for left player
+		CMP ah,48h 									;check for up arrow
 		JE MOVE_LEFT_PADDLE_UP						;if true move up
 
-		;if it is 's' or 'S' -> move down
-		CMP AL,73h 									;check for 's'
+		;if it is down arrow -> move down
+		CMP ah,50h 									;check for 's'
 		JE MOVE_LEFT_PADDLE_DOWN					;if true move up
-		CMP AL,53h 									;check for 'S'
-		JE MOVE_LEFT_PADDLE_DOWN					;if true move up
+		
 		JMP CHECK_RIGHT_PADDLE_MOVEMENT				;DO THE SAME FOR RIGHT PLAYER BUT WITH O AND L INSTEAD OF W AND S
 
 		MOVE_LEFT_PADDLE_UP: 						;Sequence to move the left paddle up
@@ -637,17 +635,17 @@ LevelThree ENDP
 			NoOldMovement:		;if there was no old movement, Check for Second fighter]
 								;SAME AS LEFT FIGHTER
 			mov cx, PADDLE_RIGHT_X
-			mov dx, NewPaddleRightX
+			mov dx, OldPaddleRightX
 			cmp cx, dx
 			jne OldMovement2
 			mov cx, PADDLE_RIGHT_Y
-			mov dx, NewPaddleRightY
+			mov dx, OldPaddleRightY
 			cmp cx, dx
 			je NoOldMovement2
 			;if it reaches this point, there had been movement , prepare to redraw
 			OldMovement2:
-			mov cx, NewPaddleRightX		;get old x coordinates
-			mov dx, NewPaddleRightY		;get old y coordinates
+			mov cx, OldPaddleRightX		;get old x coordinates
+			mov dx, OldPaddleRightY		;get old y coordinates
 
 			
 			DRAW_PADDLE_Right_HORIZONTAL:
@@ -657,13 +655,13 @@ LevelThree ENDP
 			INT 10h 					;execute the configuration
 
 			INC CX 						;CX = CX + 1
-			MOV AX,NewPaddleRightX		;CX > PADDLE_WIDTH + PADDLE_LEFT_X (if yes them new line. if no then new column)
+			MOV AX,OldPaddleRightX		;CX > PADDLE_WIDTH + PADDLE_LEFT_X (if yes them new line. if no then new column)
 			add AX,PADDLE_WIDTH	
 			CMP cx,ax
 			JNG DRAW_PADDLE_Right_HORIZONTAL
-			mov cx, NewPaddleRightX
+			mov cx, OldPaddleRightX
 			inc dx
-			MOV AX,NewPaddleRightY		;DX  <  PADDLE_LEFT_Y + Height (if yes them new line. if no then EXIT DRAWING)
+			MOV AX,OldPaddleRightY		;DX  <  PADDLE_LEFT_Y + Height (if yes them new line. if no then EXIT DRAWING)
 			add AX,PADDLE_HEIGHT	
 			cmp dx,ax
 			JNG DRAW_PADDLE_Right_HORIZONTAL
@@ -1033,6 +1031,26 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	int     21h        
     cmp al,	0Dh ;check for enter
     jne GetInputWin0	;not enter, wait for another input
+
+
+	;If user pressed enter, then he succesfully exits game mode, we now reset game variables in preparation for a new game
+
+	QUICK:	
+	mov PADDLE_LEFT_X, 0
+	mov PADDLE_LEFT_Y, 0AH
+	mov OldPaddleLeftX, 0
+	mov OldPaddleLeftY, 0AH
+
+	mov PADDLE_RIGHT_X, 280d
+	mov PADDLE_RIGHT_Y, 100D
+	mov OldPaddleRightX, 280d
+	mov OldPaddleRightY, 100D
+
+	;p1
+	mov Bulletp11_X , 0Ah 			        	;current X position (column) of the first player bullet
+	mov Bulletp11_Y , 30d 			        	;current Y position (line) of the first player bullet
+	mov Bulletp12_X , 278d 					;current X position (column) of the second player bullet 
+	mov BulletP12_Y , 119D 					;current Y position (line) of the second player bullet
 
 	;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 	;CHANGE THE BELOW CODE TO MAKE IT LOOK BETTER
