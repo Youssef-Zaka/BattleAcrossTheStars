@@ -99,7 +99,7 @@ OldPaddleRightY DW ?				;Old X position of the right paddle or fighter or space 
 PADDLE_WIDTH DW 40d					;default width of the paddle, depends on picture width (horizontal pixels count)
 PADDLE_HEIGHT DW 40d				;default height of the paddle,  depends on picture height (Vertical pixels count)
 
-PADDLE_VELOCITY DW 05h 				;default velocity of the paddle or fighter or space ship, call it whatever
+PADDLE_VELOCITY DW 06h 				;(MUST BE EVEN) default velocity of the paddle or fighter or space ship, call it whatever
 Player1H DB 'Health'				;String to be displayed at status bar
 EndPlayer1H Db ' '					;Used to print above string
 Player2H DB 'Armour'				;String to be displayed at status bar
