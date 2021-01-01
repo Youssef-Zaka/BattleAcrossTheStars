@@ -650,8 +650,9 @@ LevelThree ENDP
 		CALL RESET_Bullet_POSITION
 		Reload1:							
 		mov IsShot1 , 1
+		
 		checkP2:
-		CMP     AL, 109d 							;check for m
+		CMP     AL, 47d 							;check for /
 		JNE      paddlemovement 
 		cmp IsShot2 , 0
 		JNE Reload2 
