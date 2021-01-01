@@ -16,7 +16,8 @@
 
 ;GENERAL TODOS:
 ;
-;Recolour main and utility menus (grey = ya3)
+;SWITCH TO 16 COLORS ONLY IMAGES
+;Recolour main and utility menus (grey = ya3) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURRENTLY WORKING ON THIS)
 ;Calculate coordinates to centralize texts (such a P I T A)
 ;Implement space bar goes PEW PEW PEEEEEW 
 ;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>	(DONE)
@@ -24,8 +25,8 @@
 ;have all mesages be of a static size (PHASE 3? OPTIONAL)
 ;AT GAME OVER: Show Scores for 5 seconds >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;Level Modifiers (LIFE ARMOUR AND SO ON)
-;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode 
-;Change Health and Armour strings to images for getter looking game 
+;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode (Limited Colours, BAD IDEA)
+;Change Health and Armour strings to images for getter looking game >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;A5er 7AGA NBOS 3LEHA >> HORIZONTAL MOVEMENT (NOT A MUST, its just nice to have)
 ;we a5er 7aga bardo el keyboard rollover (example lwwwwwwwwwwww , l key was pressed first, w after, both were held together)
 ;
@@ -106,7 +107,7 @@ EndPlayer2H Db ' '					;Used to print above string
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;This is the pixels of the fighter space ship used to draw the paddle;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;40x40 pixels, width x height;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-img DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
+FighterImage DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 233, 19, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 16, 16, 16, 19, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
  DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 18, 17, 144, 20, 16, 18, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 
@@ -151,6 +152,29 @@ img DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 1
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
  InverseImage DB ? ;variable used to draw the above picture in reverse , as in the second fihter or player 2, used to save data segment memory
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Start of HEART FIGHTER PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ HeartImg DB 16, 16, 112, 40, 112, 16, 16, 16, 112, 40, 40, 40, 112, 16, 112, 40, 40, 40, 40, 40, 112, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 112, 40, 40, 112, 40 
+ DB 40, 112, 16, 112, 112, 16, 112, 112, 16
+
+InverseHeartImg DB ?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF HEART PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ArmourImage DB 16, 16, 1, 32, 1, 16, 16, 16, 1, 32, 32, 32, 1, 16, 16, 1, 32, 31, 32, 1, 16, 1, 32, 32, 31, 32, 32, 1, 1, 32, 32, 31, 32, 32, 1, 1, 32, 32, 32, 32 
+ DB 32, 1, 16, 1, 32, 32, 32, 1, 16
+
+InverseArmourImage DB ?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Start OF Armour PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Armour PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF DATA SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -227,55 +251,99 @@ inc cx					;inc x axis position
 cmp cx,WINDOW_WIDTH		;check if it reached the end >> 320 pixels or window width
 jnz Status				;if not, repeat to drow a horizontal line of length = window length
 
-;;draw health for left player using 13h/10h int
-mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
-mov bh, 0				;Page Number
-mov bl,  00000010b		;Attributes : Green color on black background 
-mov cx, offset EndPlayer1H - offset Player1H ; calculate message size for loop 
-mov dx, WINDOW_HEIGHT	;to get  window height(or row number) in dh (MUST DO FOR INTURUPT TO WORK), we first need to move it to dx (16 bit to 16 bit)
-mov dh, dl				;most segnificants are 00000000, so move dl to dh , now we have window heigth on dh
-sub dh, 2d				; subtract 2, looks better 
-mov dl,0				; Collumn number 
-push DS 				;neccesary for inturupt not to break the code
-pop es					; es = ds
-mov bp, offset Player1H	; bp = player 1 health msg ofsset, es and bp used to prng strings
-mov ah, 13h				;inturupt 13h/10h
-int 10h					;perform inturupt
+
+	;draw left
+	MOV CX, 5d 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, WINDOW_HEIGHT 
+	add DX, 10d		;set the hieght (Y) 
+	mov DI, offset InverseHeartImg 			 ; to iterate over the pixels
+	dec DI
+	   
+    MOV BH,00h   			;set the page number
+	DrawHeartLoop:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	      
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 12			
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawHeartLoop      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 5d		;reset cx to draw a new line of pixels in the new row below the row before
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,WINDOW_HEIGHT   	;  loop in y direction
+	add ax,17d					;until y location + height is smaller than dx, only then exit the loop
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitHeart1   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawHeartLoop			;repeat
+
+	ExitHeart1:
+; ;;draw health for left player using 13h/10h int
+ mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
+ mov bh, 0				;Page Number
+ mov bl,  00000010b		;Attributes : Green color on black background 
+ mov cx, 1 ; calculate message size for loop 
+ mov dx, WINDOW_HEIGHT	;to get  window height(or row number) in dh (MUST DO FOR INTURUPT TO WORK), we first need to move it to dx (16 bit to 16 bit)
+ mov dh, dl				;most segnificants are 00000000, so move dl to dh , now we have window heigth on dh
+ sub dh, 2d			; subtract 2, looks better 
+ mov dl, 2d				; Collumn number 
+ push DS 				;neccesary for inturupt not to break the code
+ pop es					; es = ds
+ mov bp, offset Player1Health	; bp = player 1 health msg ofsset, es and bp used to prng strings
+ mov ah, 13h				;inturupt 13h/10h
+ int 10h					;perform inturupt
 ;;draw health for right player using 13h/10h int
 ;; SAME STEPS AS ABOVE BUT DRAW HEALTH value under healt string in green aswell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-mov al, 1
-mov bh, 0
-mov bl,  00000010b
-mov cx, 1 ; calculate message size. 
-mov dx, WINDOW_HEIGHT
-mov dh, dl
-mov dl,2
-push DS
-pop es
-mov bp, offset Player1Health
-mov ah, 13h
-int 10h
+; mov al, 1
+; mov bh, 0
+; mov bl,  00000010b
+; mov cx, 1 ; calculate message size. 
+; mov dx, WINDOW_HEIGHT
+; mov dh, dl
+; mov dl,2
+; push DS
+; pop es
+; mov bp, offset Player1Health
+; mov ah, 13h
+; int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SAME STEPS AS ABOVE BUT DRAW HEALTH String under second player
-mov al, 1
-mov bh, 0
-mov bl,  00000010b
-mov cx, offset EndPlayer1H - offset Player1H ; calculate message size. 
-mov dx, WINDOW_HEIGHT
-mov dh, dl
-sub dh, 2d
-mov dl,33
-push DS
-pop es
-mov bp, offset Player1H
-mov ah, 13h
-int 10h
+;; SAME STEPS AS ABOVE BUT DRAW HEALTH shape under second player
+	;draw left
+	MOV CX, WINDOW_WIDTH
+	sub cx, 12d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, WINDOW_HEIGHT 
+	add DX, 10d		;set the hieght (Y) 
+	mov DI, offset InverseHeartImg 			 ; to iterate over the pixels
+	dec DI
+	MOV BH,00h   			;set the page number
+	DrawHeartLoop2:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	      
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , WINDOW_WIDTH
+	sub ax , 5d			
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawHeartLoop2      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, WINDOW_WIDTH
+	sub cx, 12d		;reset cx to draw a new line of pixels in the new row below the row before
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,WINDOW_HEIGHT   	;  loop in y direction
+	add ax,17d					;until y location + height is smaller than dx, only then exit the loop
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitHeart2   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawHeartLoop2			;repeat
+
+	ExitHeart2:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SAME STEPS AS ABOVE BUT DRAW HEALTH value under health string under second player
+;; SAME STEPS AS ABOVE BUT DRAW HEALTH value besides health image under second player
 ;;draw p2 health
 mov al, 1
 mov bh, 0
@@ -283,7 +351,8 @@ mov bl,  00000010b
 mov cx, 1 ; calculate message size. 
 mov dx, WINDOW_HEIGHT
 mov dh, dl
-mov dl,35
+sub dh, 2d
+mov dl,37d
 push DS
 pop es
 mov bp, offset Player2Health
@@ -292,22 +361,36 @@ int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SAME STEPS AS ABOVE BUT DRAW Armour string under first player
-mov al, 1
-mov bh, 0
-mov bl,  00000001b
-mov cx, offset EndPlayer2H - offset Player2H ; calculate message size. 
-mov dx, WINDOW_HEIGHT
-mov dh, dl
-sub dh, 2d
-mov dl,8d
-push DS
-pop es
-mov bp, offset Player2H
-mov ah, 13h
-int 10h
+; ;draw left
+	MOV CX, 5d 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, WINDOW_HEIGHT 
+	add DX, 35d		;set the hieght (Y) 
+	mov DI, offset InverseArmourImage 			 ; to iterate over the pixels
+	dec DI
+	   
+    MOV BH,00h   			;set the page number
+	DrawArmourLoop:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	      
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 12			
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawArmourLoop      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 5d		;reset cx to draw a new line of pixels in the new row below the row before
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,WINDOW_HEIGHT   	;  loop in y direction
+	add ax,41d					;until y location + height is smaller than dx, only then exit the loop
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitArmour1  				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawArmourLoop			;repeat
+
+	ExitArmour1:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SAME STEPS AS ABOVE BUT DRAW Armour value under string under first player
+;; SAME STEPS AS ABOVE BUT DRAW Armour value besides image under first player
 ;;draw p1 Armour
 mov al, 1
 mov bh, 0
@@ -315,7 +398,8 @@ mov bl,  00000001b
 mov cx, 1 ; calculate message size. 
 mov dx, WINDOW_HEIGHT
 mov dh, dl
-mov dl,8d
+add dh, 1d
+mov dl,2d
 push DS
 pop es
 mov bp, offset Player1Armour
@@ -325,19 +409,35 @@ int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SAME STEPS AS ABOVE BUT DRAW Armour string under second player
 ;printing armour left
-mov al, 1
-mov bh, 0
-mov bl,  00000001b
-mov cx, offset EndPlayer2H - offset Player2H ; calculate message size. 
-mov dx, WINDOW_HEIGHT
-mov dh, dl
-sub dh, 2d
-mov dl,25
-push DS
-pop es
-mov bp, offset Player2H
-mov ah, 13h
-int 10h
+	mov cx , WINDOW_WIDTH
+	sub cx, 12d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, WINDOW_HEIGHT 
+	add DX, 35d		;set the hieght (Y) 
+	mov DI, offset InverseArmourImage 			 ; to iterate over the pixels
+	dec DI
+	   
+    MOV BH,00h   			;set the page number
+	DrawArmourLoop2:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	      
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , WINDOW_WIDTH
+	sub ax , 5d			
+    cmp cx, ax		
+    Jb DrawArmourLoop2      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov cx , WINDOW_WIDTH
+	sub cx, 12d	 				;reset cx to draw a new line of pixels in the new row below the row before
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,WINDOW_HEIGHT   	;  loop in y direction
+	add ax,41d					;until y location + height is smaller than dx, only then exit the loop
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitArmour2  				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawArmourLoop2			;repeat
+
+	ExitArmour2:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SAME STEPS AS ABOVE BUT DRAW Armour value under string under first player
@@ -348,10 +448,11 @@ mov bl,  00000001b
 mov cx, 1 ; calculate message size. 
 mov dx, WINDOW_HEIGHT
 mov dh, dl
-mov dl,25d
+add dh, 1d
+mov dl,37d
 push DS
 pop es
-mov bp, offset Player2Armour
+mov bp, offset Player1Armour
 mov ah, 13h
 int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -675,7 +776,7 @@ LevelThree ENDP
     Move_Fighters ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;Procedure Used to Draw Fighters From PreCalculated Image Saved in Memory At>> img 
+;Procedure Used to Draw Fighters From PreCalculated Image Saved in Memory At>> FighterImage 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DrawFighters proc NEAR		;draw fighter procedure
@@ -683,7 +784,7 @@ LevelThree ENDP
 		;draw left
 		MOV CX, PADDLE_LEFT_X   	;set the width of picture or pixel count(X)  (based on image resolution)
 	    MOV DX, PADDLE_LEFT_Y  		;set the hieght (Y) 
-		mov DI, offset img 			 ; to iterate over the pixels
+		mov DI, offset FighterImage 			 ; to iterate over the pixels
 		   
 		    MOV BH,00h   			;set the page number
 	DrawFightersLoop:	
@@ -700,7 +801,7 @@ LevelThree ENDP
 	       mov Cx, PADDLE_LEFT_X		;reset cx to draw a new line of pixels in the new row below the row before
 	       inc DX   					;y direction increased (goes down one row) and get ready to draw
 		   mov ax,	 PADDLE_LEFT_Y   	;  loop in y direction
-		   add ax,40					;until y location + height is smaller than dx, only then exit the loop
+		   add ax,39					;until y location + height is smaller than dx, only then exit the loop
 		   cmp dx,ax 					; if not repeat for the next row
 	       ja  ENDING   				;  both x and y reached 0,0 so exit to draw the other fighter
 		   Jmp DrawFightersLoop			;repeat
@@ -710,7 +811,7 @@ LevelThree ENDP
 		;INSTEAD OF DRAWING A NEW IMAGE WE CAN USE THE SAME IMAGE BUT DRAWIN IN REVERSE ORDER
 		MOV CX, PADDLE_RIGHT_X   	
 	    MOV DX, PADDLE_RIGHT_Y  	
-		mov DI, offset InverseImage - 1  ;to get the location of the last pixel in the img
+		mov DI, offset InverseImage - 1  ;to get the location of the last pixel in the FighterImage
 		   
 		 MOV BH,00h   	;set the page number
 	DrawFightersLoop2:	
