@@ -164,14 +164,14 @@ InverseHeartImg DB ?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF HEART PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Start OF Armour PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ArmourImage DB 16, 16, 1, 32, 1, 16, 16, 16, 1, 32, 32, 32, 1, 16, 16, 1, 32, 31, 32, 1, 16, 1, 32, 32, 31, 32, 32, 1, 1, 32, 32, 31, 32, 32, 1, 1, 32, 32, 32, 32 
  DB 32, 1, 16, 1, 32, 32, 32, 1, 16
 
 InverseArmourImage DB ?
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Start OF Armour PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Armour PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -470,49 +470,61 @@ StatusBar ENDP
     ChooseLevel proc NEAR  ; a procedure that asks the player for the level he wants to play 
     ;clear screen, blue pen grey background
     MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
-    MOV BH,71H				;set page number
-    MOV CX,0000H			;colour atributes
-    MOV DX,184FH			;colour atributes
+    MOV BH,00001101b				;Colour atributes
+    MOV CX,0000H			;cursor
+    MOV DX,184FH			;cursor
     INT 10H					;procede with inturupt
     ;set cursor	location to middle of screen
     MOV AH,02H				;move curs to x and y pos (02h/10h)
     MOV BH,00				;set page number
-    MOV DX,0817H   			; X axis = 17, Y = 8
+    MOV DX,0810H   			; X axis = 17, Y = 8
     INT 10H    				;procede
+
     ;print msg
     mov dx, Offset ChooseGameLvl 	;get message (ask player to choose lvl)
 	mov     ah, 09h					;print until dollar sign $
 	int     21h						;procede
-    ;set cursor location to middle of screen
-	;SAME AS ABOVE BUT X AND Y UPDATED and mssg updated
-    MOV AH,02H						
-    MOV BH,00
-    MOV DX,0A17H ; X axis = 17, Y = 0A
-    INT 10H   
-    ;print msg
-    mov dx, Offset lvl1 
-	mov     ah, 09h
-	int     21h
-    ;set cursor location to middle of screen
-	;SAME AS ABOVE BUT X AND Y UPDATED and mssg updated
-    MOV AH,02H
-    MOV BH,00
-    MOV DX,0C17H ; X axis = 17, Y = C
-    INT 10H   
-    ;print msg
-    mov dx, Offset lvl2
-	mov     ah, 09h
-	int     21h
-     ;set cursor location to middle of screen
-	 ;SAME AS ABOVE BUT X AND Y UPDATED and mssg updated
-    MOV AH,02H
-    MOV BH,00
-    MOV DX,0E17H ; X axis = 17, Y = E
-    INT 10H   
-    ;print msg
-    mov dx, Offset lvl3 
-	mov     ah, 09h
-	int     21h
+   
+   ;REFER TO STATUS BAR STRING PRINTING
+	mov al ,1
+	mov bh, 0
+	mov bl,  00000010b
+	mov cx, 7
+	mov dl, 22H
+	mov dh, 0Ah
+	push Ds
+	pop es
+	mov bp, offset lvl1
+	mov ah, 13h
+	int 10h
+    
+	mov al ,1
+	mov bh, 0
+	mov bl,  00001110b
+	mov cx, 7
+	mov dl, 22H
+	mov dh, 0Ch
+	push Ds
+	pop es
+	mov bp, offset lvl2
+	mov ah, 13h
+	int 10h
+   
+
+	mov al ,1
+	mov bh, 0
+	mov bl,  00001100b
+	mov cx, 7
+	mov dl, 22H
+	mov dh, 0Eh
+	push Ds
+	pop es
+	mov bp, offset lvl3
+	mov ah, 13h
+	int 10h
+
+
+
     ;Hide Cursor
 	;looks good
 	;thats all
@@ -1086,12 +1098,12 @@ LevelThree ENDP
 		ENDGAME1:	;if the winner is player 1
 		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
 		mov winner,1	;set winner variable to 1
-		Call PLAYERWINS	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
+		Call GAME_OVER	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
 		jmp EXIT_BALL_COLLISION	;exit proc
 		ENDGAME2:	;	if player 2 wins
 		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
 		mov winner ,2	;set winner var to 2
-		Call PLAYERWINS ;Call the THE GAME OVER PROTOCOL
+		Call GAME_OVER ;Call the THE GAME OVER PROTOCOL
 		EXIT_BALL_COLLISION: ;exit proc
 	    RET
 	MOVE_Bullet ENDP
@@ -1101,7 +1113,7 @@ LevelThree ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL 
+GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL 
 
 	 CALL StatusBar
 	 ;;draw GAME OVER in middle of screen using 13h/10h int
@@ -1194,7 +1206,7 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 
 	 ;clear screen, blue pen grey background
     MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
-    MOV BH,71H				;set page number
+    MOV BH,00001101b				;set page number
     MOV CX,0000H			;colour atributes
     MOV DX,184FH			;colour atributes
     INT 10H					;procede with inturupt
@@ -1202,7 +1214,7 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
-    MOV DX,0817H   ; X axis = 17, Y = 8
+    MOV DX,081BH   ; X axis = 17, Y = 8
     INT 10H    
 
 	cmp winner,2 ;check which player won to display appropriate String
@@ -1213,7 +1225,7 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0D17H ; X axis = 17, Y = D
+    MOV DX,0D1BH ; X axis = 17, Y = D
     INT 10H   
     ;print msg
     mov dx, Offset PressEnter ;get press enter string 
@@ -1234,7 +1246,7 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0D17H ; X axis = 17, Y = D
+    MOV DX,0D1BH ; X axis = 17, Y = D
     INT 10H   
     ;print msg
     mov dx, Offset PressEnter 
@@ -1249,7 +1261,7 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 Returnwinner:
 
 RET
-PLAYERWINS ENDP
+GAME_OVER ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;RESET Bullet Position Procedure
@@ -1327,14 +1339,14 @@ RESET_Bullet_POSITION2 ENDP
 
     GetPlayerName proc NEAR		
     MOV AX,0600H                  
-    MOV BH,71H
+    MOV BH,00001101b
     MOV CX,0000H
     MOV DX,184FH
     INT 10H			;grey background text mode 80x25 8 pages
     ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
-    MOV DX,0817H   ; X axis = 17, Y = 8
+    MOV DX,081BH   ; X axis = 17, Y = 8
     INT 10H    
     ;print msg
     mov dx, Offset EnterName 
@@ -1343,7 +1355,7 @@ RESET_Bullet_POSITION2 ENDP
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0D17H ; X axis = 17, Y = D
+    MOV DX,0C1BH ; X axis = 17, Y = D
     INT 10H   
     ;print msg
     mov dx, Offset PressEnter 
@@ -1352,7 +1364,7 @@ RESET_Bullet_POSITION2 ENDP
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0A17H ; X axis = 17, Y = A
+    MOV DX,0A1FH ; X axis = 17, Y = A
     INT 10H   
 
 	;;get input from user
@@ -1465,14 +1477,14 @@ RESET_Bullet_POSITION2 ENDP
 	int 10h
  ;Clear entire screen and set new grey background and new words will be blue
     MOV AX,0600H                       
-    MOV BH,71H
+    MOV BH,00001101b
     MOV CX,0000H
     MOV DX,184FH
     INT 10H
     ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
-    MOV DX,0817H   ; X axis = 17, Y = 8
+    MOV DX,081BH   ; X axis = 17, Y = 8
     INT 10H    
     ;print msg
     mov dx, Offset msg1 
@@ -1481,7 +1493,7 @@ RESET_Bullet_POSITION2 ENDP
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0A17H ; X axis = 17, Y = A
+    MOV DX,0A1BH ; X axis = 17, Y = A
     INT 10H    
     ;print
     mov dx, Offset msg2 
@@ -1490,7 +1502,7 @@ RESET_Bullet_POSITION2 ENDP
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0B17H ; X axis = 17, Y = B
+    MOV DX,0B1BH ; X axis = 17, Y = B
     INT 10H    
     ;print
     mov dx, Offset msg3 
@@ -1499,7 +1511,7 @@ RESET_Bullet_POSITION2 ENDP
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0C17H ; X axis = 17, Y = C
+    MOV DX,0C1BH ; X axis = 17, Y = C
     INT 10H    
     ;print
     mov dx, Offset msg4 
@@ -1508,7 +1520,7 @@ RESET_Bullet_POSITION2 ENDP
     ;Hide cursor (set location fe 7eta msh 3al screen) 3amalt keda 3shan shaklo yeb2a 7lw bs msh aktar
     MOV AH,02H
     MOV BH,00
-    MOV DX,9D17H ; X axis = 17, Y = D
+    MOV DX,9D1BH ; X axis = 17, Y = D
     INT 10H    
 
     ;main loop, checks for input (f1 f2 esc)
@@ -1532,14 +1544,14 @@ RESET_Bullet_POSITION2 ENDP
     Escape:
     ;Clear entire screen and set new grey background and new words will be blue
     MOV AX,0600H                       
-    MOV BH,71H
+    MOV BH,00001101b
     MOV CX,0000H
     MOV DX,184FH
     INT 10H
     ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
-    MOV DX,0C10H   ; X axis = 17, Y = 8
+    MOV DX,0C0DH   ; X axis = 17, Y = 8
     INT 10H    
     ;print msg
     mov dx, Offset msg0  ;exit game
@@ -1549,7 +1561,7 @@ RESET_Bullet_POSITION2 ENDP
      ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
-    MOV DX,8817H   ; X axis = 17, Y = 8
+    MOV DX,881BH   ; X axis = 17, Y = 8
     INT 10H    
     MOV AH,4CH          ;Control is back to operating system, Now the Program has successfully been exited
     INT 21H
