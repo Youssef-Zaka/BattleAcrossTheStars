@@ -17,7 +17,8 @@
 ;GENERAL TODOS:
 ;
 ;SWITCH TO 16 COLORS ONLY IMAGES
-;Recolour main and utility menus (grey = ya3) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURRENTLY WORKING ON THIS)
+;Recolour main and utility menus (grey = ya3 GREY > BLACK) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURRENTLY WORKING ON THIS)
+;TEXT COLOR > WHITE / GREEN / ORANGE / RED
 ;Calculate coordinates to centralize texts (such a P I T A)
 ;Implement space bar goes PEW PEW PEEEEEW 
 ;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>	(DONE)
