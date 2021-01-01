@@ -16,14 +16,14 @@
 
 ;GENERAL TODOS:
 ;
-;SWITCH TO 16 COLORS ONLY IMAGES and smaller pixels
+;SWITCH TO 16 COLORS ONLY IMAGES and smaller pixels >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(WAITING ON SHEBL)
 ;Recolour main and utility menus (grey = ya3 GREY > BLACK) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;TEXT COLOR > WHITE / GREEN / ORANGE / RED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;Calculate coordinates to centralize texts (such a P I T A)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;Implement space bar goes PEW PEW PEEEEEW 
+;Implement space bar goes PEW PEW PEEEEEW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURENT WORK IN PROGRESS)
 ;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;switch movement to arrow keys (NECCESSARY FOR PHASE 3)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE);
-;have all mesages be of a static size (PHASE 3? OPTIONAL)
+;have all mesages be of a static size (PHASE 3? OPTIONAL, CHECK DOCUMENT)
 ;AT GAME OVER: Show Scores for 5 seconds >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;Level Modifiers (LIFE ARMOUR AND SO ON)
 ;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode (Limited Colours, BAD IDEA)
