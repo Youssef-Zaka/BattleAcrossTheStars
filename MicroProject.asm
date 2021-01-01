@@ -71,8 +71,8 @@ TIME_AUX DB 0 						;variable used when checking if the time has changed
 TIME_AUX_SEC DB 0					;Variable used to check if five seconds had passed at game over
 PRINTSECONDS DB 0
 
-IsShot1 DB 0
-IsShot2 DB 0
+IsShot1 DB 1
+IsShot2 DB 1
 
 ;p1
 Bulletp11_X DW 0Ah 			        	;current X position (column) of the first player bullet
@@ -225,9 +225,15 @@ MAIN ENDP								;end of main proc
 		;CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode/ CAUSED FLICKERING<>> REMOVED
 									; Instead each element on the screen is drawed in black in old location and redrawin in new location
         CALL StatusBar				;Updates Status Bar Each Time Step
-
-		CALL MOVE_Bullet 				;calling the procedure to move the Bullets, check for collision remove old bullet locations
+		
+		cmp IsShot1 , 0
+		je checkforsecondbullet
+		CALL MOVE_Bullet 
+		checkforsecondbullet:				;calling the procedure to move the Bullets, check for collision remove old bullet locations
+		cmp IsShot2 , 0
+		je drawbulletsthen
 		CALL MOVE_Bullet2 				;calling the procedure to move the Bullets, check for collision remove old bullet locations
+		drawbulletsthen:
 		CALL DrawBullets 				;calling the procedure to draw the bullets
 
 		cmp winner,0					;checks if a winner exists
@@ -474,10 +480,20 @@ StatusBar ENDP
 
     ChooseLevel proc NEAR  ; a procedure that asks the player for the level he wants to play 
 
+
+;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
+	;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
 	MOV AX,WINDOW_HEIGHT
 	SUB AX,WINDOW_BOUNDS
 	SUB AX,PADDLE_HEIGHT
 	mov PADDLE_RIGHT_Y, ax
+	Call RESET_Bullet_POSITION
+	Call RESET_Bullet_POSITION2
+	;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
+;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
+
+
+
     ;clear screen, blue pen grey background
     MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
     MOV BH,00001101b				;Colour atributes
@@ -621,21 +637,43 @@ LevelThree ENDP
 		mov OldPaddleRightX, ax
 		mov ax, PADDLE_RIGHT_Y
 		mov OldPaddleRightY, ax
-        
-		;check if any key is being pressed and check if it is the move key(if not check the other player)
+
 		MOV AH,01h	;get key pressed BUT DO NOT WAIT FOR A KEY
 		INT 16h		;inturupt 01ah/16h
-		JZ CHECK_RIGHT_PADDLE_MOVEMENT 	;ZF=1, JZ -> Jump if zero to check other fighter, means no input
-		; if it reaches here, there was in fact an input
-		;check which key is being pressed (AL = ASCII Character)
-
-		;; TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-		;; TODO : Check for f4 instead of esc, and if so initiate end game sequence 
-		;get the key that was pressed and act accordingly
-		MOV AH,00h  ;get key from buffer
+		JZ CHECK_RIGHT_PADDLE_MOVEMENT
+        MOV AH,00h  ;get key from buffer
 		INT 16h 	;00ah/16h
-		CMP     AL, 1Bh 							;check for 'Esc' 
-		JZ      exit 								;Jump to exit if 'Esc' is pressed
+		CMP     AL, 32d 							;check for space bar
+		JNE      checkP2
+		cmp IsShot1 , 0
+		JNE Reload1 
+		CALL RESET_Bullet_POSITION
+		Reload1:							
+		mov IsShot1 , 1
+		checkP2:
+		CMP     AL, 109d 							;check for m
+		JNE      paddlemovement 
+		cmp IsShot2 , 0
+		JNE Reload2 
+		CALL RESET_Bullet_POSITION2
+		Reload2:
+		mov IsShot2 , 1
+		
+		paddlemovement:
+		;check if any key is being pressed and check if it is the move key(if not check the other player)
+		; MOV AH,01h	;get key pressed BUT DO NOT WAIT FOR A KEY
+		; INT 16h		;inturupt 01ah/16h
+		; JZ CHECK_RIGHT_PADDLE_MOVEMENT 	;ZF=1, JZ -> Jump if zero to check other fighter, means no input
+		; ; if it reaches here, there was in fact an input
+		; ;check which key is being pressed (AL = ASCII Character)
+
+		; ;; TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+		; ;; TODO : Check for f4 instead of esc, and if so initiate end game sequence 
+		; ;get the key that was pressed and act accordingly
+		; MOV AH,00h  ;get key from buffer
+		; INT 16h 	;00ah/16h
+		; CMP     AL, 1Bh 							;check for 'Esc' 
+		; JZ      exit 								;Jump to exit if 'Esc' is pressed
 
 		;if it is up arrow  -> move up for left player
 		CMP ah,48h 									;check for up arrow
@@ -878,7 +916,9 @@ LevelThree ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     DrawBullets proc NEAR
-
+			mov ax,PADDLE_WIDTH
+			cmp Bulletp11_X , ax
+			je SecondBullet
             mov ax, 0A000h      ; to graphics region in memory (REFER TO LECTURE 10, tha second part right after jump types, the video ram part) 
             mov es, ax  		;set es to point to video ram first part 
 
@@ -906,7 +946,12 @@ LevelThree ENDP
 			;EXACTLY THE SAME AS ABOVE 
 			;VERY VERY IMPORTANT NOTE: 
 			;this drawing method directly affects collision calculations
-
+			SecondBullet:
+			mov ax, WINDOW_WIDTH
+			sub ax, PADDLE_WIDTH
+			sub ax, BulletSize
+			cmp Bulletp12_X, ax
+			je Dontdraw
 			MOV AX,Bulletp12_Y 					;set the initial line (Y) in ax
            	MOV DX,Bulletp12_X					;set the initial line (X) in dx
         	mov cx, WINDOW_WIDTH
@@ -925,6 +970,7 @@ LevelThree ENDP
         	mov Al,0DH		;DRAW PURPLE BULLETS INSTEAD
         	mov cx,BulletSize 
         	rep STOSB
+			Dontdraw:
             RET
     DrawBullets ENDP
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -973,8 +1019,6 @@ LevelThree ENDP
         	mov Al,00H			;black colour
         	mov cx,BulletSize 
         	rep STOSB			;Draw bullet sie times 
-
-			;REPEAT FOR PLAYER 2 BULLET
 
 
 		; NEXT we move both bullets in thier respective directions
@@ -1319,6 +1363,7 @@ RESET_Bullet_POSITION proc NEAR				;Procedure that might change later, for now r
 		MOV AX,PADDLE_LEFT_Y
 		add ax,19							;make it shoot from center of fighter (height/2 - 1)
 		MOV Bulletp11_Y,AX 					;setting current Y-coordinate of the bullet to blasters of fighter1 
+		mov IsShot1 ,0
 											;EXIT PROCEDURE
 RET
 RESET_Bullet_POSITION ENDP
@@ -1334,6 +1379,7 @@ RESET_Bullet_POSITION2 proc NEAR
 		MOV AX,PADDLE_RIGHT_Y
 		add ax,19							;make it shoot from center of fighter (height/2 - 1)
 		MOV Bulletp12_Y,AX 					;setting current Y-coordinate of the bullet to blasters of fighter2 
+		mov IsShot2 ,0
 
 											;EXIT PROCEDURE
 RET
