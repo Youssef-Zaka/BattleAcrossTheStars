@@ -20,9 +20,9 @@
 ;Calculate coordinates to centralize texts (such a P I T A)
 ;Implement space bar goes PEW PEW PEEEEEW 
 ;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>	(DONE)
-;switch movement to arrow keys (NECCESSARY FOR PHASE 3);
+;switch movement to arrow keys (NECCESSARY FOR PHASE 3)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE);
 ;have all mesages be of a static size (PHASE 3? OPTIONAL)
-;AT GAME OVER: Show Scores for 5 seconds
+;AT GAME OVER: Show Scores for 5 seconds >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;Level Modifiers (LIFE ARMOUR AND SO ON)
 ;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode 
 ;Change Health and Armour strings to images for getter looking game 
@@ -65,6 +65,9 @@ WINDOW_HEIGHT DW 150d				;the height of the window of accesiable gameing area(15
 WINDOW_BOUNDS DW 6 					;variable used to check collisions early
 
 TIME_AUX DB 0 						;variable used when checking if the time has changed
+TIME_AUX_SEC DB 0					;Variable used to check if five seconds had passed at game over
+PRINTSECONDS DB 0
+
 ;p1
 Bulletp11_X DW 0Ah 			        	;current X position (column) of the first player bullet
 Bulletp11_Y DW 30d 			        	;current Y position (line) of the first player bullet
@@ -1002,7 +1005,7 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	 ;;draw GAME OVER in middle of screen using 13h/10h int
 	mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
 	mov bh, 0				;Page Number
-	mov bl,  00001101b		;Attributes : Green color on black background 
+	mov bl,  00001101b		;Attributes :Purple  color on black background 
 	mov cx, offset ENDGAMEOVER - offset GAMEOVER  ; calculate message size for loop 			
 	mov dh, 2d				;row 2
 	mov dl,15D				;Collumn number 
@@ -1012,28 +1015,53 @@ PLAYERWINS PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	mov ah, 13h				;inturupt 13h/10h
 	int 10h					;perform inturupt
 
-	 ;;draw PRess ENter to Cont in middle of screen using 13h/10h int
-	mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
-	mov bh, 0				;Page Number
-	mov bl,  00001101b		;Attributes : Green color on black background 
-	mov cx, offset ENDPRESSENTER - offset PressEnter ; calculate message size for loop 			
-	mov dh, 6d				;row 2
-	mov dl,8D				;Collumn number 
-	push DS 				;neccesary for inturupt not to break the code
-	pop es					; es = ds
-	mov bp, offset PressEnter	; bp = player 1 health msg ofsset, es and bp used to prng strings
-	mov ah, 13h				;inturupt 13h/10h
-	int 10h					;perform inturupt
 
-	;get enter from user
-	GetInputWin0:
-    mov     ah, 7  ;take input
-	int     21h        
-    cmp al,	0Dh ;check for enter
-    jne GetInputWin0	;not enter, wait for another input
+	;;Now we display game over for 5 seconds then we move on
+	MOV AH,2Ch					;get the system time
+	INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
+	mov TIME_AUX_SEC,dh			;We Get Seconds 
+	add TIME_AUX_SEC, 5			;We Add 5 (as in 5 seconds)
+	cmp TIME_AUX_SEC , 60
+	JB FIVE_SECONDS
 
+	sub TIME_AUX_SEC, 60
+	
+	FIVE_SECONDS: 					;a loop for checking the next frame arival
+		MOV AH,2Ch					;get the system time
+		INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
+		mov al, TIME_AUX_SEC		; Get the time + 5 seconds 
+		sub al, DH					;subtract current time
+		JNS NOTNEGATIVE 			;check if negative value , for example at sys time 56, 56+5 seconds is second 1 in new minute
+		NEG al						;;make it +ve
+		mov dh,60					
+		sub dh,al					;subtract that new number from 60 
+		mov al,dh					;now at al we have the correct value 
+		NOTNEGATIVE:				;proceed to printing and cout down
+		mov PRINTSECONDS, al		
+		add PRINTSECONDS,48d		;check if result is 0, if yes exit loop
+		cmp PRINTSECONDS,0			
+		JE DONT
 
-	;If user pressed enter, then he succesfully exits game mode, we now reset game variables in preparation for a new game
+		;the folowing code prints the count down from 5 to 0
+		mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
+		mov bh, 0				;Page Number
+		mov bl,  00001101b		;Attributes : purple color on black background 
+		mov cx, 1  ; calculate message size for loop 			
+		mov dh, 5d				;row 2
+		mov dl,19D				;Collumn number 
+		push DS 				;neccesary for inturupt not to break the code
+		pop es					; es = ds
+		mov bp, offset PRINTSECONDS	; bp GAMEOVER msg ofsset, es and bp used to print strings
+		mov ah, 13h				;inturupt 13h/10h
+		int 10h					;perform inturupt	
+		
+		DONT:					;if 5 seconds had passed, then we continue to do level resets
+		MOV AH,2Ch					;get the system time
+		INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
+		CMP DH,TIME_AUX_SEC				;is the current time equal to the previous one (TIME_AUX)?
+		JNE FIVE_SECONDS				;if it is the same ,wait for new frame
+
+	; then user succesfully exits game mode, we now reset game variables in preparation for a new game
 
 	QUICK:	
 	mov PADDLE_LEFT_X, 0
