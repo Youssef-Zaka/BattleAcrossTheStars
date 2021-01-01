@@ -65,11 +65,14 @@ msg4	    db      "press ESC to exit", '$'	;string displayer at Mode selection / 
 msg0 db      "Thank you for playing our game, press any key to exit",0Dh,0Ah,09h, '$'	;string displayer when exiting program
 WINDOW_WIDTH DW 140h				;the width of the window (320 pixels)
 WINDOW_HEIGHT DW 150d				;the height of the window of accesiable gameing area(150 pixels)
-WINDOW_BOUNDS DW 6 					;variable used to check collisions early
+WINDOW_BOUNDS DW 4d					;variable used to check collisions early
 
 TIME_AUX DB 0 						;variable used when checking if the time has changed
 TIME_AUX_SEC DB 0					;Variable used to check if five seconds had passed at game over
 PRINTSECONDS DB 0
+
+IsShot1 DB 0
+IsShot2 DB 0
 
 ;p1
 Bulletp11_X DW 0Ah 			        	;current X position (column) of the first player bullet
@@ -99,7 +102,7 @@ OldPaddleRightY DW ?				;Old X position of the right paddle or fighter or space 
 PADDLE_WIDTH DW 40d					;default width of the paddle, depends on picture width (horizontal pixels count)
 PADDLE_HEIGHT DW 40d				;default height of the paddle,  depends on picture height (Vertical pixels count)
 
-PADDLE_VELOCITY DW 06h 				;(MUST BE EVEN) default velocity of the paddle or fighter or space ship, call it whatever
+PADDLE_VELOCITY DW 8h 				;(MUST BE EVEN) default velocity of the paddle or fighter or space ship, call it whatever
 Player1H DB 'Health'				;String to be displayed at status bar
 EndPlayer1H Db ' '					;Used to print above string
 Player2H DB 'Armour'				;String to be displayed at status bar
@@ -224,6 +227,7 @@ MAIN ENDP								;end of main proc
         CALL StatusBar				;Updates Status Bar Each Time Step
 
 		CALL MOVE_Bullet 				;calling the procedure to move the Bullets, check for collision remove old bullet locations
+		CALL MOVE_Bullet2 				;calling the procedure to move the Bullets, check for collision remove old bullet locations
 		CALL DrawBullets 				;calling the procedure to draw the bullets
 
 		cmp winner,0					;checks if a winner exists
@@ -469,6 +473,11 @@ StatusBar ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     ChooseLevel proc NEAR  ; a procedure that asks the player for the level he wants to play 
+
+	MOV AX,WINDOW_HEIGHT
+	SUB AX,WINDOW_BOUNDS
+	SUB AX,PADDLE_HEIGHT
+	mov PADDLE_RIGHT_Y, ax
     ;clear screen, blue pen grey background
     MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
     MOV BH,00001101b				;Colour atributes
@@ -967,6 +976,89 @@ LevelThree ENDP
 
 			;REPEAT FOR PLAYER 2 BULLET
 
+
+		; NEXT we move both bullets in thier respective directions
+		MOV AX,Bullet_VELOCITY_X	;add bullet velocity in X direction to its current X coordinate
+		ADD Bulletp11_X,AX 			;move the bullet horizontally (from left to right)
+		MOV AX,WINDOW_WIDTH			;Get Window Width in ax
+		SUB AX,BulletSize			;Subtract Bullet size from it
+		SUB AX,WINDOW_BOUNDS		;Subtract Window Bounds
+		CMP Bulletp11_X,AX			;Bulletp11_X is compared with the right boundaries of the screen
+		JG  RESET_POSITION 	;if it is greater, reset position
+		; if it reaches this point then no POSITION RESETS were neccesary, then 
+		jmp contafterjmp ;now we can assume they are within bounds, thus we do the within bounds calculations
+						 ;contafterjmp guarantees that we Dont reset pos if they are in bounds
+	
+		RESET_POSITION: 
+		Call RESET_Bullet_POSITION ;Procedure that returns Bullet to Blasters of the ship (weird right? WRONG)
+									;this way a player can have only one active bullet at a time
+									;if players can shoot alot, even with a reload period, they can easily CHEASE the game
+									;CHEASY WINS is when you win using some unfair way, say a bug or a glitch
+									;we dont want that now do we? NOPE WE DONT 
+									;Which is Why my good friend we must limit the player's prowess
+									;especially on dosbox where the screen is alreadt so tiny with such small dimensions 
+									;ma3lesh tawelt 3lek :D 
+		JMP EXIT_BALL_COLLISION		;Go back to Checking second bullets		
+
+
+		;If it reaches this point then the ball is definetly inside bounds, do important collison and power ups calculations 
+		contafterjmp:
+		;now do do fighter=bullets collision checks
+		;we start with right figer 
+		MOV AX,PADDLE_RIGHT_X	;get X coardinate of right fighter
+		add ax,10				;ADD 10, because without it in narrow sceen makes the game rippy (Gives the player more wiggle room)
+		CMP Bulletp11_X,AX		;compare between the two, if bullet location is greater, then there might be collision
+									;to make sure we check the y location
+									;if however it is in fact lower, then there can't be collision, check for left fighter now 
+		JL EXIT_BALL_COLLISION		;if there is no collision then we check for left fighter
+
+		;if it reaches this point then there might be collision with Y axis
+		MOV AX,Bulletp11_Y		;get Y coordinates of bullet
+		CMP AX,PADDLE_Right_Y	;compare it to Y coor of fighter, if it is lower : no collision : Check Left Fighter 
+									;if there is higher there might be collision
+		JNG EXIT_BALL_COLLISION	;if there is no collision Check Left Fighter
+
+		;if it reaches this point then there might be collision
+		;now we know it is in the X axis collsion range
+		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
+		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
+		;If Not then No collision, we check for left paddle 
+		MOV AX,PADDLE_Right_Y	;get y coordinate of fighter
+		ADD AX,PADDLE_HEIGHT	;add fighter height, now we have the last Y pixel of the fighter
+		CMP Bulletp11_Y,AX		;Check and see if bullet Y is less than Fighter Y + Fighter Height
+		JG EXIT_BALL_COLLISION		;if there is no collision Check Left Fighter
+
+		;if it reaches this point the ball is colliding with the right paddle For Sure
+		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
+		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+		;decrement player armour
+		;check if armour is zero
+        Dec Player2Health	;decrement player health
+		cmp Player2Health , 48d ;Check if heakth is zero, ZERO IN ASCII is 48
+								; we use ascii instead of 0 because it saves calculations when printing these values in status bar 
+		je ENDGAME1				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODO)
+		CALL RESET_Bullet_POSITION	;if there is collision return bullet to fighter to prepare for new shoot 
+        RET
+        ;
+        ;
+		;exit this procedure
+		ENDGAME1:	;if the winner is player 1
+		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
+		mov winner,1	;set winner variable to 1
+		Call GAME_OVER	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
+		EXIT_BALL_COLLISION: ;exit proc
+	    RET
+	MOVE_Bullet ENDP
+
+
+
+	MOVE_Bullet2 PROC NEAR					;process the movemment of the bullet
+
+		;first Erase old bullet
+			mov ax, 0A000h      ;to graphics screen
+            mov es, ax  		;Refer to LECTURE 10			
+			;REPEAT FOR PLAYER 2 BULLET
+
 			MOV AX,Bulletp12_Y 					
            	MOV DX,Bulletp12_X					
         	mov cx, WINDOW_WIDTH
@@ -988,15 +1080,6 @@ LevelThree ENDP
 			;ERASION END
 
 
-		; NEXT we move both bullets in thier respective directions
-		MOV AX,Bullet_VELOCITY_X	;add bullet velocity in X direction to its current X coordinate
-		ADD Bulletp11_X,AX 			;move the bullet horizontally (from left to right)
-		MOV AX,WINDOW_WIDTH			;Get Window Width in ax
-		SUB AX,BulletSize			;Subtract Bullet size from it
-		SUB AX,WINDOW_BOUNDS		;Subtract Window Bounds
-		CMP Bulletp11_X,AX			;Bulletp11_X is compared with the right boundaries of the screen
-		JG FAR ptr RESET_POSITION 	;if it is greater, reset position
-		BACKtoBulletTwo:
 		MOV AX,Bullet_VELOCITY_X	;The Same For bullet of player 2 
 		sub Bulletp12_X,AX 			;move the bullet horizontally in negative direction (from right to left)
 		;check if it has passed the left boundaries (Bulletp11_X < 0 + WINDOW_BOUNDS)
@@ -1005,19 +1088,8 @@ LevelThree ENDP
 		CMP Bulletp12_X,AX 			;Bulletp12_X is compared with the left boundaries of the screen
 		JL RESET_POSITION2 			;if it is less, reset position 
 		; if it reaches this point then no POSITION RESETS were neccesary, then 
-		jmp contafterjmp ;now we can assume they are within bounds, thus we do the within bounds calculations
-						 ;contafterjmp guarantees that we Dont reset pos if they are in bounds
-	
-		RESET_POSITION: 
-		Call RESET_Bullet_POSITION ;Procedure that returns Bullet to Blasters of the ship (weird right? WRONG)
-									;this way a player can have only one active bullet at a time
-									;if players can shoot alot, even with a reload period, they can easily CHEASE the game
-									;CHEASY WINS is when you win using some unfair way, say a bug or a glitch
-									;we dont want that now do we? NOPE WE DONT 
-									;Which is Why my good friend we must limit the player's prowess
-									;especially on dosbox where the screen is alreadt so tiny with such small dimensions 
-									;ma3lesh tawelt 3lek :D 
-		JMP BACKtoBulletTwo		;Go back to Checking second bullets		
+		jmp contafterjmp2 ;now we can assume they are within bounds, thus we do the within bounds calculations
+						 ;contafterjmp guarantees that we Dont reset pos if they are in bounds	
 
 		RESET_POSITION2:			;SAME AS FOR BULLET ONE, But after this one, it exits procedure, because if ball is out of bounds
 										;then it cant hit ships or power ups, thus no need to do any more calculations 
@@ -1026,60 +1098,26 @@ LevelThree ENDP
 
 
 		;If it reaches this point then the ball is definetly inside bounds, do impotant collison and power ups calculations 
-		contafterjmp:
+		contafterjmp2:
 		;now do do fighter=bullets collision checks
-		;we start with right figer 
-		MOV AX,PADDLE_RIGHT_X	;get X coardinate of right fighter
-		add ax,10				;ADD 10, because without it in narrow sceen makes the game rippy (Gives the player more wiggle room)
-		CMP Bulletp11_X,AX		;compare between the two, if bullet location is greater, then there might be collision
-									;to make sure we check the y location
-									;if however it is in fact lower, then there can't be collision, check for left fighter now 
-		JL CHECK_COLLISION_WITH_LEFT_PADDLE		;if there is no collision then we check for left fighter
-
-		;if it reaches this point then there might be collision with Y axis
-		MOV AX,Bulletp11_Y		;get Y coordinates of bullet
-		CMP AX,PADDLE_Right_Y	;compare it to Y coor of fighter, if it is lower : no collision : Check Left Fighter 
-									;if there is higher there might be collision
-		JNG CHECK_COLLISION_WITH_LEFT_PADDLE	;if there is no collision Check Left Fighter
-
-		;if it reaches this point then there might be collision
-		;now we know it is in the X axis collsion range
-		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
-		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
-		;If Not then No collision, we check for left paddle 
-		MOV AX,PADDLE_Right_Y	;get y coordinate of fighter
-		ADD AX,PADDLE_HEIGHT	;add fighter height, now we have the last Y pixel of the fighter
-		CMP Bulletp11_Y,AX		;Check and see if bullet Y is less than Fighter Y + Fighter Height
-		JG CHECK_COLLISION_WITH_LEFT_PADDLE		;if there is no collision Check Left Fighter
-
-		;if it reaches this point the ball is colliding with the right paddle For Sure
-		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
-		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-		;decrement player armour
-		;check if armour is zero
-        Dec Player2Health	;decrement player health
-		cmp Player2Health , 48d ;Check if heakth is zero, ZERO IN ASCII is 48
-								; we use ascii instead of 0 because it saves calculations when printing these values in status bar 
-		je ENDGAME1				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODO)
-		CALL RESET_Bullet_POSITION	;if there is collision return bullet to fighter to prepare for new shoot 
-
+		
 		;SAME AS ABOVE; With some minor tweeks
 		CHECK_COLLISION_WITH_LEFT_PADDLE:
 		MOV AX,PADDLE_LEFT_X		
 		add ax,PADDLE_WIDTH 
 		sub ax,10d
 		CMP AX,Bulletp12_X 	;compare bullet x with fighter x + fighter width () - 10 (to acheive the same distance as right fighter)
-		JNG EXIT_BALL_COLLISION	;Exit proc if there is no collision
+		JNG EXIT_BALL_COLLISION2	;Exit proc if there is no collision
 
 		MOV AX,Bulletp12_Y
 		ADD AX,BulletSize
 		CMP AX,PADDLE_LEFT_Y	;same as right fighter
-		JNG EXIT_BALL_COLLISION	;Exit proc if there is no collision
+		JNG EXIT_BALL_COLLISION2	;Exit proc if there is no collision
 
 		MOV AX,PADDLE_LEFT_Y
 		ADD AX,PADDLE_HEIGHT
 		CMP Bulletp12_Y,AX 		;same as right fighter
-		JNL EXIT_BALL_COLLISION	;Exit proc if there is no collision
+		JNL EXIT_BALL_COLLISION2	;Exit proc if there is no collision
 
 		;if it reaches this point the ball is colliding with the left paddle For sure
 		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
@@ -1096,18 +1134,13 @@ LevelThree ENDP
         ;
         ;
 		;exit this procedure
-		ENDGAME1:	;if the winner is player 1
-		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
-		mov winner,1	;set winner variable to 1
-		Call GAME_OVER	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
-		jmp EXIT_BALL_COLLISION	;exit proc
 		ENDGAME2:	;	if player 2 wins
 		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
 		mov winner ,2	;set winner var to 2
 		Call GAME_OVER ;Call the THE GAME OVER PROTOCOL
-		EXIT_BALL_COLLISION: ;exit proc
+		EXIT_BALL_COLLISION2: ;exit proc
 	    RET
-	MOVE_Bullet ENDP
+	MOVE_Bullet2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Player Wins Proc 
