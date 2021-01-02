@@ -20,12 +20,12 @@
 ;Recolour main and utility menus (grey = ya3 GREY > BLACK) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;TEXT COLOR > WHITE / GREEN / ORANGE / RED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;Calculate coordinates to centralize texts (such a P I T A)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;Implement space bar goes PEW PEW PEEEEEW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURENT WORK IN PROGRESS)
+;Implement space bar goes PEW PEW PEEEEEW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;switch movement to arrow keys (NECCESSARY FOR PHASE 3)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE);
 ;have all mesages be of a static size (PHASE 3? OPTIONAL, CHECK DOCUMENT)
 ;AT GAME OVER: Show Scores for 5 seconds >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;Level Modifiers (LIFE ARMOUR AND SO ON)
+;Level Modifiers (LIFE ARMOUR AND SO ON)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURRENT WORK IN PROGRESS)
 ;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode (Limited Colours, BAD IDEA)
 ;Change Health and Armour strings to images for getter looking game >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
 ;A5er 7AGA NBOS 3LEHA >> HORIZONTAL MOVEMENT (NOT A MUST, its just nice to have)
@@ -73,6 +73,9 @@ PRINTSECONDS DB 0
 
 IsShot1 DB 1
 IsShot2 DB 1
+ActivePowerUp DB 5d  			; 5=NONE, 4 = health, 3 = armour, 2 = Speed Up, 1= multishot , 0 = Freeze
+PowerTimer DB 0
+PowerUpCollision DB 0
 
 ;p1
 Bulletp11_X DW 0Ah 			        	;current X position (column) of the first player bullet
@@ -224,6 +227,8 @@ MAIN ENDP								;end of main proc
 		MOV TIME_AUX,DL 			;Update time with new frame
 		;CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode/ CAUSED FLICKERING<>> REMOVED
 									; Instead each element on the screen is drawed in black in old location and redrawin in new location
+
+		CALL POWERUPS							
         CALL StatusBar				;Updates Status Bar Each Time Step
 		
 		cmp IsShot1 , 0
@@ -248,7 +253,170 @@ MAIN ENDP								;end of main proc
     GameMode ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+POWERUPS proc NEAR
+mov ActivePowerUp ,  5d ; USED FOR TESTING, if act pu = 5, no power up, generate one
+;GENERATE POWER UP
+cmp ActivePowerUp , 5d		;check for active poewr up
+jne ProcessPowerUp			; if yes process it 
+MOV AH,2Ch					;get the system time
+INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
+
+cmp DH , 30d				;check for 30 second mark, momken azawed aktar
+je GENEREATERANDOM			;if so generate more
+cmp DH , 15d				;check for 15 second mark, momken azawed aktar
+je GENEREATERANDOM			;if so generate more
+cmp DH , 45d				;check for 45 second mark, momken azawed aktar
+je GENEREATERANDOM			;if so generate more
+cmp DH,0d					;check for 0 seconds mark
+JNE ENDPOWER				;if non dont generate
+
+GENEREATERANDOM:
+mov PowerTimer , DH			
+add PowerTimer,10
+
+
+   MOV AH, 00h  ; interrupts to get system time        
+   INT 1AH      ; CX:DX now hold number of clock ticks since midnight      
+
+   mov  ax, dx
+   xor  dx, dx
+   mov  cx, 5    
+   div  cx       ; here DL contains the remainder of the division - from 0 to 4
+   mov ActivePowerUp, DL		; put that number into powerups (it becomes the active power up)
+ProcessPowerUp:
+MOV AH,2Ch					;get the system time
+INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
+cmp Dh, PowerTimer			;if timer had passed, disable it, other wise process (TDODODODODODODODODOODOTDODODODODODODODODOODOTDODODODODODODODODOODO)
+JE Disable
+CALL CreatePowerUp			;if new, create new
+
+
+jmp ENDPOWER
+Disable:
+mov ActivePowerUp , 5d
+
+
+ENDPOWER:
+RET
+POWERUPS ENDP
+
+
+
+CreatePowerUp PROC NEAR
+cmp ActivePowerUp,4d
+je CreateHealth
+cmp ActivePowerUp,3d
+je CreatArmour
+cmp ActivePowerUp,2d
+je CreateSpeed
+cmp ActivePowerUp,1d
+je CreateFreeze
+cmp ActivePowerUp,0d
+je CreateMultiShot
+
+CreateHealth:
+cmp PowerUpCollision , 1
+je ENDCREATION
+CALL DrawLifePowerUPProcedure
+; mov PowerUpCollision , 1
+RET
+CreatArmour:
+cmp PowerUpCollision , 1
+je ENDCREATION
+CALL DrawArmourPowerUPProcedure
+; mov PowerUpCollision , 1
+RET
+CreateSpeed:
+cmp PowerUpCollision , 1
+je ENDCREATION
+CALL DrawSpeedPowerUPProcedure
+; mov PowerUpCollision , 1
+RET
+CreateFreeze:
+cmp PowerUpCollision , 1
+je ENDCREATION
+CALL DrawFreezePowerUPProcedure
+; mov PowerUpCollision , 1
+RET
+CreateMultiShot:
+cmp PowerUpCollision , 1
+je ENDCREATION
+Call DrawMultiShotPowerUPProcedure
+; mov PowerUpCollision , 1  
+RET
+ENDCREATION:
+RET
+CreatePowerUp ENDP
+;description
+DrawLifePowerUPProcedure PROC
+MOV CX, WINDOW_WIDTH
+	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, 72d  
+	mov DI, offset InverseHeartImg 			 ; to iterate over the pixels
+	dec DI
+	MOV BH,00h   			;set the page number
+	DrawHeartLoopPU:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 164d		
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawHeartLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 157d
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,79d   	;  loop in y direction
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitHeartPU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawHeartLoopPU			;repeat
+ExitHeartPU:
+
+RET
+DrawLifePowerUPProcedure ENDP
+
+DrawArmourPowerUPProcedure PROC
+	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, 72d  
+	mov DI, offset InverseArmourImage			 ; to iterate over the pixels
+	dec DI
+	MOV BH,00h   			;set the page number
+	DrawingArmourLoop:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 164d		
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawingArmourLoop      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 157d
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,78d   	;  loop in y direction
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitArmourtPU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawingArmourLoop			;repeat
+ExitArmourtPU:
+RET
+DrawArmourPowerUPProcedure ENDP
+
+DrawSpeedPowerUPProcedure PROC
+
+
+RET
+DrawSpeedPowerUPProcedure ENDP
+
+DrawFreezePowerUPProcedure PROC
+
+
+RET
+DrawFreezePowerUPProcedure ENDP
+
+DrawMultiShotPowerUPProcedure PROC
+
+
+RET
+DrawMultiShotPowerUPProcedure ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 StatusBar proc NEAR 	  ;Procedure Resposible for updating status bar/////PHASE 3> Should also have text mode 
@@ -654,6 +822,7 @@ LevelThree ENDP
 		checkP2:
 		CMP     AL, 47d 							;check for /
 		JNE      paddlemovement 
+
 		cmp IsShot2 , 0
 		JNE Reload2 
 		CALL RESET_Bullet_POSITION2
