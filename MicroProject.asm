@@ -73,7 +73,7 @@ PRINTSECONDS DB 0
 
 IsShot1 DB 1
 IsShot2 DB 1
-ActivePowerUp DB 5d  			; 5=NONE, 4 = health, 3 = armour, 2 = Speed Up, 1= multishot , 0 = Freeze
+ActivePowerUp DB 6d  			; 5=NONE, 4 = health, 3 = armour, 2 = Speed Up, 1= multishot , 0 = Freeze
 PowerTimer DB 0
 PowerUpCollision DB 0
 
@@ -182,12 +182,50 @@ InverseArmourImage DB ?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Armour PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Start of Freeze PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF DATA SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+FreezeImage DB 31, 53, 16, 53, 16, 53, 31, 53, 31, 16, 31, 16, 31, 53, 16, 16, 53, 31, 53, 16, 16, 53, 31, 31, 53, 31, 31, 53, 16, 16, 53, 31, 53, 16, 16, 53, 31, 16, 31, 16 
+ DB 31, 53, 31, 53, 16, 53, 16, 53, 31
+
+ InverseFreezeImage DB ?
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Freeze PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;start OF Meteor PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+MeteorImage DB 37, 37, 37, 37, 37, 108, 16, 37, 108, 108, 37, 108, 16, 16, 37, 108, 37, 37, 16, 37, 16, 37, 37, 37, 108, 16, 16, 37, 37, 108, 16, 16, 37, 16, 16, 108, 16, 37, 16, 16 
+ DB 37, 16, 16, 16, 16, 37, 16, 16, 37
+
+InverseMeteorImage DB ?
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Meteor PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Start of Speed PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+SpeedImage DB 16, 16, 116, 43, 116, 16, 16, 16, 16, 116, 43, 116, 16, 16, 116, 16, 116, 43, 116, 16, 116, 116, 43, 43, 43, 43, 43, 116, 16, 116, 43, 43, 43, 116, 16, 16, 16, 116, 43, 116 
+ DB 16, 16, 16, 16, 16, 116, 16, 16, 16
+
+InverseSpeedImage DB ?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Speed PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;start OF MultiShot PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+MultiShotImage DB 16, 111, 111, 111, 111, 111, 16, 16, 16, 111, 16, 111, 16, 16, 16, 16, 16, 40, 16, 16, 16, 16, 16, 40, 16, 40, 16, 16, 16, 40, 16, 40, 16, 40, 16, 40, 16, 16, 16, 16 
+ DB 16, 40, 16, 16, 16, 40, 16, 16, 16
+
+InverseMultiShotImage DB ?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF MultiShot PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF DATA SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;START OF CODE SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -254,20 +292,24 @@ MAIN ENDP								;end of main proc
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 POWERUPS proc NEAR
-mov ActivePowerUp ,  5d ; USED FOR TESTING, if act pu = 5, no power up, generate one
+mov ActivePowerUp ,  6d ; USED FOR TESTING, if act pu = 5, no power up, generate one
 ;GENERATE POWER UP
-cmp ActivePowerUp , 5d		;check for active poewr up
+cmp ActivePowerUp , 6d		;check for active poewr up
 jne ProcessPowerUp			; if yes process it 
 MOV AH,2Ch					;get the system time
 INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
 
-cmp DH , 30d				;check for 30 second mark, momken azawed aktar
+cmp DH , 10d				;check for 10 second mark,
 je GENEREATERANDOM			;if so generate more
-cmp DH , 15d				;check for 15 second mark, momken azawed aktar
+cmp DH , 20d				;check for 20 second mark, 
 je GENEREATERANDOM			;if so generate more
-cmp DH , 45d				;check for 45 second mark, momken azawed aktar
+cmp DH , 30d				;check for 30 second mark, 
 je GENEREATERANDOM			;if so generate more
-cmp DH,0d					;check for 0 seconds mark
+cmp DH , 40d				;check for 40 second mark, 
+je GENEREATERANDOM			;if so generate more
+cmp DH , 50d				;check for 50 second mark, 				
+je GENEREATERANDOM			;if so generate more
+cmp DH,0d					;check for 60 seconds mark
 JNE ENDPOWER				;if non dont generate
 
 GENEREATERANDOM:
@@ -280,7 +322,7 @@ add PowerTimer,10
 
    mov  ax, dx
    xor  dx, dx
-   mov  cx, 5    
+   mov  cx, 6   
    div  cx       ; here DL contains the remainder of the division - from 0 to 4
    mov ActivePowerUp, DL		; put that number into powerups (it becomes the active power up)
 ProcessPowerUp:
@@ -293,7 +335,7 @@ CALL CreatePowerUp			;if new, create new
 
 jmp ENDPOWER
 Disable:
-mov ActivePowerUp , 5d
+mov ActivePowerUp , 6d
 
 
 ENDPOWER:
@@ -303,6 +345,8 @@ POWERUPS ENDP
 
 
 CreatePowerUp PROC NEAR
+cmp ActivePowerUp,5d
+je CreateMeteorite
 cmp ActivePowerUp,4d
 je CreateHealth
 cmp ActivePowerUp,3d
@@ -344,12 +388,17 @@ je ENDCREATION
 Call DrawMultiShotPowerUPProcedure
 ; mov PowerUpCollision , 1  
 RET
+CreateMeteorite:
+cmp PowerUpCollision , 1
+je ENDCREATION
+Call DrawMeteoritePowerUPProcedure
+; mov PowerUpCollision , 1  
+RET
 ENDCREATION:
 RET
 CreatePowerUp ENDP
 ;description
 DrawLifePowerUPProcedure PROC
-MOV CX, WINDOW_WIDTH
 	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
     MOV DX, 72d  
 	mov DI, offset InverseHeartImg 			 ; to iterate over the pixels
@@ -366,7 +415,7 @@ MOV CX, WINDOW_WIDTH
     Jb DrawHeartLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 157d
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
-	mov ax,79d   	;  loop in y direction
+	mov ax,78d   	;  loop in y direction
 	cmp dx,ax 					; if not repeat for the next row
 	ja  ExitHeartPU   				;  both x and y reached 0,0 so exit to draw the other fighter
 	Jmp DrawHeartLoopPU			;repeat
@@ -401,22 +450,109 @@ RET
 DrawArmourPowerUPProcedure ENDP
 
 DrawSpeedPowerUPProcedure PROC
-
+	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, 72d  
+	mov DI, offset InverseSpeedImage			 ; to iterate over the pixels
+	dec DI
+	MOV BH,00h   			;set the page number
+	DrawSpeedLoopPU:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 164d		
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawSpeedLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 157d
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,78d   	;  loop in y direction
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitSpeedPU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawSpeedLoopPU			;repeat
+ExitSpeedPU:
 
 RET
 DrawSpeedPowerUPProcedure ENDP
 
 DrawFreezePowerUPProcedure PROC
-
+	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, 72d  
+	mov DI, offset InverseFreezeImage			 ; to iterate over the pixels
+	dec DI
+	MOV BH,00h   			;set the page number
+	DrawFreezeLoopPU:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 164d		
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawFreezeLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 157d
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,78d   	;  loop in y direction
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitFreezePU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawFreezeLoopPU			;repeat
+ExitFreezePU:
 
 RET
 DrawFreezePowerUPProcedure ENDP
 
 DrawMultiShotPowerUPProcedure PROC
-
+	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, 72d  
+	mov DI, offset InverseMultiShotImage			 ; to iterate over the pixels
+	dec DI
+	MOV BH,00h   			;set the page number
+	DrawMultiShotLoopPU:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 164d		
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawMultiShotLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 157d
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,78d   	;  loop in y direction
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitMultiShotPU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawMultiShotLoopPU			;repeat
+ExitMultiShotPU:
 
 RET
 DrawMultiShotPowerUPProcedure ENDP
+
+
+DrawMeteoritePowerUPProcedure PROC
+mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+    MOV DX, 72d  
+	mov DI, offset InverseMeteorImage			 ; to iterate over the pixels
+	dec DI
+	MOV BH,00h   			;set the page number
+	DrawMetoriteLoopPU:	
+    MOV AH,0Ch   	;set the configuration to writing a pixel
+    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+	INT 10h      	;draw a pixel
+    Dec DI			;increase di to get the next pixel for the next iteration
+	inc Cx       	; used to loop in x direction
+    mov ax , 164d		
+    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawMetoriteLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 157d
+	inc DX   					;y direction increased (goes down one row) and get ready to draw
+	mov ax,78d   	;  loop in y direction
+	cmp dx,ax 					; if not repeat for the next row
+	ja  ExitMeteoritePU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	Jmp DrawMetoriteLoopPU			;repeat
+ExitMeteoritePU:
+
+RET	
+DrawMeteoritePowerUPProcedure ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 StatusBar proc NEAR 	  ;Procedure Resposible for updating status bar/////PHASE 3> Should also have text mode 
