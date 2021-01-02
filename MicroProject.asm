@@ -89,7 +89,7 @@ Bulletp22_X DW 0Ah 						;current X position (column) of the second Multishot
 BulletP22_Y DW 0Ah 						;current Y position (line) of the second Multishot
             
 BulletSize DW 08h						;size of the bullet (how many pixels does the bullet have) w x h
-Bullet_VELOCITY_X DW 0Ah 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
+Bullet_VELOCITY_X DW 6d 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
 Bullet_VELOCITY_Y DW 02h				;Y (vertical) velocity of the ball 
 
 PADDLE_LEFT_X DW 0d					;current X position of the left paddle or fighter or space ship, call it whatever
@@ -1593,17 +1593,6 @@ RESET_Bullet_POSITION2 ENDP
     MOV CX,0000H
     MOV DX,184FH
     INT 10H			;grey background text mode 80x25 8 pages
-
-
-	MOV AH,02H
-    MOV BH,00
-    MOV DX,1701H   ; X axis = 17, Y = 8
-    INT 10H    
-    ;print msg
-    mov dx, Offset CREDITS 
-	mov     ah, 09h
-	int     21h
-
 
     ;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
