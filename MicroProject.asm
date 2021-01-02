@@ -1486,7 +1486,7 @@ LevelThree ENDP
 		mov winner,1	;set winner variable to 1
 		Call GAME_OVER	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
 
-
+		RET
 		EXIT_BALL_COLLISION: ;Check for power Up COllisions
 		cmp ActivePower , 6
 		je NoPowerUp
@@ -1609,7 +1609,37 @@ LevelThree ENDP
 		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
 		mov winner ,2	;set winner var to 2
 		Call GAME_OVER ;Call the THE GAME OVER PROTOCOL
+		RET
 		EXIT_BALL_COLLISION2: ;exit proc
+		cmp ActivePower , 6
+		je NoPowerUp2
+
+		MOV AX,Bulletp12_X	;get X coardinate ofPowerUp
+		CMP AX	,164d	;compare between the two, if bullet location is greater, then there might be collision
+									;to make sure we check the y location
+									;if however it is in fact lower, then there can't be collision, check for left fighter now 
+		JG NoPowerUp2		;if there is no collision then we check for left fighter
+
+		;if it reaches this point then there might be collision with Y axis
+		MOV AX,Bulletp12_Y		;get Y coordinates of bullet
+		CMP AX,71d				;compare it to Y coor of powerup, if it is lower : no collision : Check Left Fighter 
+									;if there is higher there might be collision
+		JL NoPowerUp2	;if there is no collision Check Left Fighter
+
+		;if it reaches this point then there might be collision
+		;now we know it is in the X axis collsion range
+		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
+		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
+		;If Not then No collision, we check for left paddle 
+		CMP Bulletp12_Y,79d		;Check and see if bullet Y is less than Fighter Y + Fighter Height
+		JG NoPowerUp2		;if there is no collision Check Left Fighter
+
+		mov PowerUpCollision , 1d
+		CALL ENDPOWERUPLIFESPAN
+		CALL RESET_Bullet_POSITION2
+		CALL USEPOWERUP2
+		mov ActivePower,6d
+		NoPowerUp2:
 	    RET
 	MOVE_Bullet2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
