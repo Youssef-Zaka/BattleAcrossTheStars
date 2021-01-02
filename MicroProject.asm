@@ -114,6 +114,7 @@ EndPlayer1H Db ' '					;Used to print above string
 Player2H DB 'Armour'				;String to be displayed at status bar
 EndPlayer2H Db ' '					;Used to print above string
 
+EndPowerUpTimer Db 0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;This is the pixels of the fighter space ship used to draw the paddle;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;40x40 pixels, width x height;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -304,6 +305,18 @@ cmp PowerUpCollision , 1
 JE ENDCREATION
 mov PowerTimer ,dh
 
+; cmp DH , 6d					;check for 5 second mark,
+; je Disable			;if so Disable PowerUps
+; cmp DH , 16d				;check for 15 second mark, 
+; je Disable			;if so Disable PowerUps
+; cmp DH , 26d				;check for 25 second mark, 
+; je Disable			;if so Disable PowerUps
+; cmp DH , 36d				;check for 35 second mark, 
+; je Disable			;if so Disable PowerUps
+; cmp DH , 46d				;check for 45 second mark, 				
+; je Disable			;if so Disable PowerUps
+; cmp DH,56d					;check for 55 second mark,
+; JE Disable				;if so Disable PowerUps
 
 cmp DH , 10d				;check for 10 second mark,
 je GENEREATERANDOM			;if so generate more
@@ -319,6 +332,7 @@ cmp DH,0d					;check for 60 seconds mark
 JNE ENDPOWER				;if non dont generate
 
 GENEREATERANDOM:
+Call DisablePowerUpEffects
    MOV AH, 00h  ; interrupts to get system time        
    INT 1AH      ; CX:DX now hold number of clock ticks since midnight      
 
@@ -340,11 +354,43 @@ je returnfromEndingCreation
 mov PowerUpCollision, 0
 returnfromEndingCreation:
 RET
+; Disable:
+;Call DisablePowerUpEffects
+; RET
 PowerUpGeneratorProcedure ENDP
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;description
+DisablePowerUpEffects PROC
+cmp GameLevel , 1
+je LVL1PUvalues
+cmp GameLevel , 2
+je LVL2PUvalues
+cmp GameLevel , 3
+je LVL3PUvalues
+
+LVL1PUvalues:
+mov Bullet_VELOCITY_X, 4d
+mov Bullet_VELOCITY_X2, 4d
+mov PADDLE_VELOCITY, 8d
+mov PADDLE_VELOCITY2, 8d
+RET
+LVL2PUvalues:
+mov Bullet_VELOCITY_X, 6d
+mov Bullet_VELOCITY_X2, 6d
+mov PADDLE_VELOCITY, 8d
+mov PADDLE_VELOCITY2, 8d
+RET
+LVL3PUvalues:
+mov Bullet_VELOCITY_X, 6d
+mov Bullet_VELOCITY_X2, 6d
+mov PADDLE_VELOCITY, 8d
+mov PADDLE_VELOCITY2, 8d
+RET
+DisablePowerUpEffects ENDP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 USEPOWERUP1 PROC
 cmp ActivePower,4
 je INCREMETHealth
