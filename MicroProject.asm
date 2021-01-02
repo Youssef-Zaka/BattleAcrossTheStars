@@ -65,7 +65,7 @@ msg4	    db      "press ESC to exit", '$'	;string displayer at Mode selection / 
 msg0 db      "Thank you for playing our game, press any key to exit",0Dh,0Ah,09h, '$'	;string displayer when exiting program
 WINDOW_WIDTH DW 140h				;the width of the window (320 pixels)
 WINDOW_HEIGHT DW 150d				;the height of the window of accesiable gameing area(150 pixels)
-WINDOW_BOUNDS DW 4d					;variable used to check collisions early
+WINDOW_BOUNDS DW 6d					;variable used to check collisions early
 
 TIME_AUX DB 0 						;variable used when checking if the time has changed
 TIME_AUX_SEC DB 0					;Variable used to check if five seconds had passed at game over
@@ -107,7 +107,7 @@ OldPaddleRightY DW ?				;Old X position of the right paddle or fighter or space 
 PADDLE_WIDTH DW 40d					;default width of the paddle, depends on picture width (horizontal pixels count)
 PADDLE_HEIGHT DW 40d				;default height of the paddle,  depends on picture height (Vertical pixels count)
 
-PADDLE_VELOCITY DW 8h 				;(MUST BE EVEN) default velocity of the paddle or fighter or space ship, call it whatever
+PADDLE_VELOCITY DW 8h 				;(MUST BE number 96 devisor (4,6,8,12,16,24 are acceptable)) default velocity of the paddle or fighter or space ship, call it whatever
 PADDLE_VELOCITY2 DW 8h
 Player1H DB 'Health'				;String to be displayed at status bar
 EndPlayer1H Db ' '					;Used to print above string
@@ -1472,10 +1472,16 @@ LevelThree ENDP
 		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 		;decrement player armour
 		;check if armour is zero
+		cmp Player2Armour , 48d
+		je DecHealthPlayer2
+		Dec Player2Armour
+		Jmp hit1
+		DecHealthPlayer2:
         Dec Player2Health	;decrement player health
 		cmp Player2Health , 48d ;Check if heakth is zero, ZERO IN ASCII is 48
 								; we use ascii instead of 0 because it saves calculations when printing these values in status bar 
 		je ENDGAME1				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODO)
+		hit1:
 		CALL RESET_Bullet_POSITION	;if there is collision return bullet to fighter to prepare for new shoot 
         RET
         ;
@@ -1594,10 +1600,16 @@ LevelThree ENDP
 		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 		;decrement player armour
 		;check if armour is zero
+		cmp Player1Armour,48d
+		je DecHealthPlayer1
+		dec Player1Armour
+		jmp hit2
+		DecHealthPlayer1:
 		Dec Player1Health	;decrement player health
 		cmp Player1Health , 48d	;Check if heakth is zero, ZERO IN ASCII is 48
 								; we use ascii instead of 0 because it saves calculations when printing these values in status bar
 		je ENDGAME2				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODOTODOTODOTODOTODOTODOTODOTODOTODO)
+		hit2:
 		CALL RESET_Bullet_POSITION2 ;if there is collision return bullet to fighter to prepare for new shoot
 		;If the bullet is colliding with a fighter then it cant be colliding with anything else
 		;thus exit procedure
