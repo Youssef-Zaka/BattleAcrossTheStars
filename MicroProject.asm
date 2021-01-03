@@ -120,7 +120,6 @@ Player1H DB 'Health'				;String to be displayed at status bar
 EndPlayer1H Db ' '					;Used to print above string
 Player2H DB 'Armour'				;String to be displayed at status bar
 EndPlayer2H Db ' '					;Used to print above string
-
 EndPowerUpTimer Db 0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;This is the pixels of the fighter space ship used to draw the paddle;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -304,7 +303,7 @@ MAIN ENDP								;end of main proc
 		NoMultiShooter:
 		cmp winner,0					;checks if a winner exists
 		jne ReturnToMainMenu			;If someone did win, return to main menu
-
+		FightersProcedures:
 		CALL Move_Fighters 			;move the paddles or fighters (check for key presses) and remove old paddles
 		CALL DrawFighters 			;draw the paddles or fighters with the updated positions
 
@@ -361,8 +360,8 @@ Call DisablePowerUpEffects
    div  cx       ; here DL contains the remainder of the division - from 0 to 4
    mov PowerUpCreateCheck, DL		; put that number into powerups (it becomes the active power up)
    mov ActivePower, DL		; put that number into powerups (it becomes the active power up)
-; mov PowerUpCreateCheck, 0
-; mov ActivePower, 0
+; mov PowerUpCreateCheck, 5
+; mov ActivePower, 5
 CALL CreatePowerUp			;if new, create new
 mov PowerUpCreateCheck ,  6d ; USED FOR TESTING, if act pu = 6, no power up, generate one
 ENDPOWER:
@@ -443,7 +442,7 @@ MultiShot1:
 mov MultiShooter, 1d
 RET
 Meteorite:
-
+mov Player2Armour,48d
 RET
 USEPOWERUP1 ENDP
 
@@ -477,7 +476,7 @@ MultiShot2:
 mov MultiShooter, 2d
 RET
 Meteorite2:
-
+mov Player1Armour,48d
 RET
 
 
@@ -507,7 +506,8 @@ ENDPOWERUPLIFESPAN PROC
 ExitErasionOfPowerUp:
 RET
 ENDPOWERUPLIFESPAN ENDP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 CreatePowerUp PROC NEAR
 cmp PowerUpCreateCheck,5d
 je CreateMeteorite
