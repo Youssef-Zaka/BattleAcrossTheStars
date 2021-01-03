@@ -992,10 +992,19 @@ StatusBar ENDP
 	mov PADDLE_RIGHT_Y, ax
 	Call RESET_Bullet_POSITION
 	Call RESET_Bullet_POSITION2
+	mov PADDLE_LEFT_X, 0
+	mov PADDLE_LEFT_Y, 0AH
+	mov OldPaddleLeftX, 0
+	mov OldPaddleLeftY, 0AH
+
+	mov PADDLE_RIGHT_X, 280d
+	mov PADDLE_RIGHT_Y, 90D
+	mov OldPaddleRightX, 280d
+	mov OldPaddleRightY, 100D
 	;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
 ;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
 
-
+	
 
     ;clear screen, blue pen grey background
     MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
@@ -2226,7 +2235,7 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	mov OldPaddleLeftY, 0AH
 
 	mov PADDLE_RIGHT_X, 280d
-	mov PADDLE_RIGHT_Y, 100D
+	mov PADDLE_RIGHT_Y, 90D
 	mov OldPaddleRightX, 280d
 	mov OldPaddleRightY, 100D
 
@@ -2611,9 +2620,8 @@ RESET_Bullet_POSITION2 ENDP
 
     ;main loop, checks for input (f1 f2 esc)
     getnum:
-    mov     ax, 1  ;take input
+    mov     ax, 0  ;take input
 	int     16h       
-    jnz getnum
     ; check if input is f1 or f2 or ESC, other wise go back to taking another input
 	cmp     ah, 3Bh
 	jE     StartChatMode  
