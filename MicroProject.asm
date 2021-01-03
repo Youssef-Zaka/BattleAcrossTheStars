@@ -73,6 +73,7 @@ PRINTSECONDS DB 0
 
 IsShot1 DB 1
 IsShot2 DB 1
+IsMultiShotShot DB 0
 PowerUpCreateCheck DB 6d  			; 6=NONE, 5 = Meteorite, 4 = health, 3 = armour, 2 = Speed Up, 1= Freeze , 0 = multishot
 ActivePower DB 6d					; 6=NONE, 5 = Meteorite, 4 = health, 3 = armour, 2 = Speed Up, 1= Freeze , 0 = multishot
 PowerTimer DB 0
@@ -88,11 +89,17 @@ Bulletp21_X DW 0A0h				        ;current X position (column) first Multishot
 Bulletp21_Y DW 64h 			        	;current Y position (line) of first Multishot
 Bulletp22_X DW 0Ah 						;current X position (column) of the second Multishot 
 BulletP22_Y DW 0Ah 						;current Y position (line) of the second Multishot
-            
+MultiShooter DB 0						;THE PLAYER WITH THE POWERUP
+Bullet_VELOCITY_Y DW 04h				;Y (vertical) velocity of the ball      
+MULTISHOT_VELOCITYX1 DW 4d
+MULTISHOT_VELOCITYX2 DW 4d
+MULTISHOT_VELOCITYY1 DW 4d
+MULTISHOT_VELOCITYY2 DW 4d
+
 BulletSize DW 08h						;size of the bullet (how many pixels does the bullet have) w x h
 Bullet_VELOCITY_X DW 6d 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
 Bullet_VELOCITY_X2 DW 6d 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
-Bullet_VELOCITY_Y DW 02h				;Y (vertical) velocity of the ball 
+
 
 PADDLE_LEFT_X DW 0d					;current X position of the left paddle or fighter or space ship, call it whatever
 PADDLE_LEFT_Y DW 0Ah 				;current Y position of the left paddle or fighter or space ship, call it whatever
@@ -283,6 +290,18 @@ MAIN ENDP								;end of main proc
 		drawbulletsthen:
 		CALL DrawBullets 				;calling the procedure to draw the bullets
 
+		
+		cmp IsMultiShotShot , 0
+		je ResetMultiPos
+		Call MoveMultiShot
+		cmp IsMultiShotShot , 0
+		je ResetMultiPos
+		Call DrawMultiShot
+		; cmp MultiShooter , 0
+		; je NoMultiShooter
+		ResetMultiPos:
+		CALL RESET_Bullet_POSITION_Multi
+		NoMultiShooter:
 		cmp winner,0					;checks if a winner exists
 		jne ReturnToMainMenu			;If someone did win, return to main menu
 
@@ -342,8 +361,8 @@ Call DisablePowerUpEffects
    div  cx       ; here DL contains the remainder of the division - from 0 to 4
    mov PowerUpCreateCheck, DL		; put that number into powerups (it becomes the active power up)
    mov ActivePower, DL		; put that number into powerups (it becomes the active power up)
-
-
+; mov PowerUpCreateCheck, 0
+; mov ActivePower, 0
 CALL CreatePowerUp			;if new, create new
 mov PowerUpCreateCheck ,  6d ; USED FOR TESTING, if act pu = 6, no power up, generate one
 ENDPOWER:
@@ -374,18 +393,21 @@ mov Bullet_VELOCITY_X, 4d
 mov Bullet_VELOCITY_X2, 4d
 mov PADDLE_VELOCITY, 8d
 mov PADDLE_VELOCITY2, 8d
+mov MultiShooter , 0
 RET
 LVL2PUvalues:
 mov Bullet_VELOCITY_X, 6d
 mov Bullet_VELOCITY_X2, 6d
 mov PADDLE_VELOCITY, 8d
 mov PADDLE_VELOCITY2, 8d
+mov MultiShooter , 0
 RET
 LVL3PUvalues:
 mov Bullet_VELOCITY_X, 6d
 mov Bullet_VELOCITY_X2, 6d
 mov PADDLE_VELOCITY, 8d
 mov PADDLE_VELOCITY2, 8d
+mov MultiShooter , 0
 RET
 DisablePowerUpEffects ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -418,7 +440,7 @@ Freeze1:
 Mov PADDLE_VELOCITY2, 0d
 RET
 MultiShot1:
-
+mov MultiShooter, 1d
 RET
 Meteorite:
 
@@ -452,7 +474,7 @@ Freeze2:
 Mov PADDLE_VELOCITY, 0d
 RET
 MultiShot2:
-
+mov MultiShooter, 2d
 RET
 Meteorite2:
 
@@ -1029,6 +1051,11 @@ mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
 mov Bullet_VELOCITY_X , 4d;
 mov Bullet_VELOCITY_X2 , 4d;
+CALL RESET_Bullet_POSITION_Multi
+Mov IsMultiShotShot , 0
+mov MultiShooter , 0
+mov ActivePower , 0
+mov PowerUpCreateCheck , 0
 ;game speed
 ;armour enable
 ;max armour
@@ -1046,6 +1073,11 @@ mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
 mov Bullet_VELOCITY_X , 6d;
 mov Bullet_VELOCITY_X2 , 6d;
+CALL RESET_Bullet_POSITION_Multi
+Mov IsMultiShotShot , 0
+mov MultiShooter , 0
+mov ActivePower , 0
+mov PowerUpCreateCheck , 0
 ;to be added
 RET
 LevelTwo ENDP
@@ -1058,6 +1090,11 @@ mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
 mov Bullet_VELOCITY_X , 6d;
 mov Bullet_VELOCITY_X2 , 6d;
+CALL RESET_Bullet_POSITION_Multi
+Mov IsMultiShotShot , 0
+mov MultiShooter , 0
+mov ActivePower , 0
+mov PowerUpCreateCheck , 0
 ;to be added
 RET
 LevelThree ENDP
@@ -1079,7 +1116,7 @@ LevelThree ENDP
 
 		MOV AH,01h	;get key pressed BUT DO NOT WAIT FOR A KEY
 		INT 16h		;inturupt 01ah/16h
-		JZ CHECK_RIGHT_PADDLE_MOVEMENT
+		JZ CHECK_RIGHT_PADDLE_MOVEMENTJMPER
         MOV AH,00h  ;get key from buffer
 		INT 16h 	;00ah/16h
 		CMP     AL, 32d 							;check for space bar
@@ -1088,7 +1125,10 @@ LevelThree ENDP
 		JNE Reload1 
 		CALL RESET_Bullet_POSITION
 		Reload1:							
-		mov IsShot1 , 1
+		mov IsShot1 , 1d
+		cmp MultiShooter,1d
+		jne checkP2
+		mov IsMultiShotShot, 1d
 		
 		checkP2:
 		CMP     AL, 47d 							;check for /
@@ -1099,7 +1139,15 @@ LevelThree ENDP
 		CALL RESET_Bullet_POSITION2
 		Reload2:
 		mov IsShot2 , 1
-		
+		cmp MultiShooter,2d
+		jne paddlemovement
+		mov IsMultiShotShot, 1d
+		jmp paddlemovement
+
+		CHECK_RIGHT_PADDLE_MOVEMENTJMPER:
+		jmp CHECK_RIGHT_PADDLE_MOVEMENT
+
+
 		paddlemovement:
 		;check if any key is being pressed and check if it is the move key(if not check the other player)
 		; MOV AH,01h	;get key pressed BUT DO NOT WAIT FOR A KEY
@@ -1702,6 +1750,342 @@ LevelThree ENDP
 	MOVE_Bullet2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Procedure for moving multishot bullets
+MoveMultiShot PROC ;;;
+
+;first Erase old bullet
+			mov ax, 0A000h      ;to graphics screen
+            mov es, ax  		;Refer to LECTURE 10			
+			;REPEAT FOR PLAYER 2 BULLET
+
+			MOV AX,Bulletp22_Y 					
+           	MOV DX,Bulletp12_X					
+        	mov cx, WINDOW_WIDTH
+        	mul cx					
+        	add ax,Bulletp22_X
+        	mov di, ax      
+            mov Al,00H
+            mov cx,BulletSize       
+            rep STOSB
+        	MOV AX,Bulletp22_Y
+        	mov cx, WINDOW_WIDTH
+        	mul cx					
+        	add ax,Bulletp22_X
+        	add  ax,WINDOW_WIDTH
+        	mov di, ax
+        	mov Al,00H
+        	mov cx,BulletSize 
+        	rep STOSB
+			;first Erase old bullet
+			mov ax, 0A000h      ;to graphics screen
+            mov es, ax  		;Refer to LECTURE 10			
+			;REPEAT FOR PLAYER 2 BULLET
+
+			MOV AX,Bulletp21_Y 					
+           	MOV DX,Bulletp21_X					
+        	mov cx, WINDOW_WIDTH
+        	mul cx					
+        	add ax,Bulletp21_X
+        	mov di, ax      
+            mov Al,00H
+            mov cx,BulletSize       
+            rep STOSB
+        	MOV AX,Bulletp21_Y
+        	mov cx, WINDOW_WIDTH
+        	mul cx					
+        	add ax,Bulletp21_X
+        	add  ax,WINDOW_WIDTH
+        	mov di, ax
+        	mov Al,00H
+        	mov cx,BulletSize 
+        	rep STOSB
+			;ERASION END
+			;ERASION END
+			; NEXT we move both bullets in thier respective directions
+		MOV AX,MULTISHOT_VELOCITYX1	;add bullet velocity in X direction to its current X coordinate
+		ADD Bulletp21_X,AX 			;move the bullet horizontally (from left to right)
+		MOV AX,MULTISHOT_VELOCITYX2	;add bullet velocity in X direction to its current X coordinate
+		ADD Bulletp22_X,AX 			;move the bullet horizontally (from left to right)
+		MOV AX,MULTISHOT_VELOCITYY1	;add bullet velocity in X direction to its current X coordinate
+		ADD Bulletp21_Y,AX 			;move the bullet horizontally (from left to right)
+		MOV AX,MULTISHOT_VELOCITYY2	;add bullet velocity in X direction to its current X coordinate
+		ADD Bulletp22_Y,AX 			;move the bullet horizontally (from left to right)
+		MOV AX,WINDOW_BOUNDS
+		CMP Bulletp21_Y,AX					;Bulletp21_Y is compared with the top boundaries of the screen	
+		JL NEG_VELOCITY_Y1				;if its less reverse the velocity in Y
+		jmp CheckUpBound
+		NEG_VELOCITY_Y1:
+		NEG MULTISHOT_VELOCITYY1
+		CheckUpBound:
+		MOV AX,WINDOW_BOUNDS
+		CMP Bulletp22_Y,AX					;Bulletp22_Y is compared with the top boundaries of the screen	
+		JL NEG_VELOCITY_Y2				;if its less reverse the velocity in Y
+		jmp CheckDownBound
+		NEG_VELOCITY_Y2:
+		NEG MULTISHOT_VELOCITYY2
+		CheckDownBound:
+		;check if it has passed the bottom boundary (BALL_Y > WINDOW_HEIGHT - BALL_SIZE - WINDOW_BOUNDS)
+		;if its colliding reverse the velocity in Y
+		MOV AX,WINDOW_HEIGHT
+		SUB AX,BulletSize
+		SUB AX,WINDOW_BOUNDS					
+		CMP Bulletp21_Y,AX					;BALL_Y is compared with the bottom boundaries of the screen
+		JG NEG_VELOCITY_Y12				;if its greater reverse the velocity in Y
+		jmp CheckDownBound2
+		NEG_VELOCITY_Y12:
+		NEG MULTISHOT_VELOCITYY1
+		CheckDownBound2:
+		MOV AX,WINDOW_HEIGHT
+		SUB AX,BulletSize
+		SUB AX,WINDOW_BOUNDS					
+		CMP Bulletp22_Y,AX					;BALL_Y is compared with the bottom boundaries of the screen
+		JG NEG_VELOCITY_Y122				;if its greater reverse the velocity in Y
+		jmp CheckDownBound22
+		NEG_VELOCITY_Y122:
+		NEG MULTISHOT_VELOCITYY2
+		CheckDownBound22:
+
+		
+		MOV AX,WINDOW_WIDTH			;Get Window Width in ax
+		SUB AX,BulletSize			;Subtract Bullet size from it
+		SUB AX,WINDOW_BOUNDS		;Subtract Window Bounds
+		CMP Bulletp21_X,AX			;Bulletp21_X is compared with the right boundaries of the screen
+		JG  RESET_POSITION_M 	;if it is greater, reset position
+		MOV AX,WINDOW_BOUNDS
+		CMP Bulletp22_X,AX 			;Bulletp12_X is compared with the left boundaries of the screen
+		JL RESET_POSITION_M 			;if it is less, reset position 
+		; if it reaches this point then no POSITION RESETS were neccesary, then 
+		jmp contafterjmpM ;now we can assume they are within bounds, thus we do the within bounds calculations
+						 ;contafterjmp guarantees that we Dont reset pos if they are in bounds
+	
+		RESET_POSITION_M: 
+		Call RESET_Bullet_POSITION_Multi_AFTERSHOT ;Procedure that returns Bullet to Blasters of the ship (weird right? WRONG)
+									;this way a player can have only one active bullet at a time
+									;if players can shoot alot, even with a reload period, they can easily CHEASE the game
+									;CHEASY WINS is when you win using some unfair way, say a bug or a glitch
+									;we dont want that now do we? NOPE WE DONT 
+									;Which is Why my good friend we must limit the player's prowess
+									;especially on dosbox where the screen is alreadt so tiny with such small dimensions 
+									;ma3lesh tawelt 3lek :D 
+		RET		;Go back to Checking second bullets		
+
+
+		;If it reaches this point then the ball is definetly inside bounds, do important collison and power ups calculations 
+		contafterjmpM:
+		MOV AX,PADDLE_RIGHT_X	;get X coardinate of right fighter
+		add ax,10				;ADD 10, because without it in narrow sceen makes the game rippy (Gives the player more wiggle room)
+		CMP Bulletp21_X,AX		;compare between the two, if bullet location is greater, then there might be collision
+									;to make sure we check the y location
+									;if however it is in fact lower, then there can't be collision, check for left fighter now 
+		JL CHECK_COLLISION_WITH_LEFT_PADDLEM		;if there is no collision then we check for left fighter
+
+		;if it reaches this point then there might be collision with Y axis
+		MOV AX,Bulletp21_Y		;get Y coordinates of bullet
+		CMP AX,PADDLE_Right_Y	;compare it to Y coor of fighter, if it is lower : no collision : Check Left Fighter 
+									;if there is higher there might be collision
+		JNG CHECK_COLLISION_WITH_LEFT_PADDLEM	;if there is no collision Check Left Fighter
+
+		;if it reaches this point then there might be collision
+		;now we know it is in the X axis collsion range
+		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
+		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
+		;If Not then No collision, we check for left paddle 
+		MOV AX,PADDLE_Right_Y	;get y coordinate of fighter
+		ADD AX,PADDLE_HEIGHT	;add fighter height, now we have the last Y pixel of the fighter
+		CMP Bulletp21_Y,AX		;Check and see if bullet Y is less than Fighter Y + Fighter Height
+		JG CHECK_COLLISION_WITH_LEFT_PADDLEM		;if there is no collision Check Left Fighter
+
+		;if it reaches this point the ball is colliding with the right paddle For Sure
+		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
+		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+		;decrement player armour
+		;check if armour is zero
+		cmp Player2Armour , 48d
+		je DecHealthPlayer2M
+		Dec Player2Armour
+		Jmp hit1M
+		DecHealthPlayer2M:
+        Dec Player2Health	;decrement player health
+		cmp Player2Health , 48d ;Check if heakth is zero, ZERO IN ASCII is 48
+								; we use ascii instead of 0 because it saves calculations when printing these values in status bar 
+		je ENDGAME1M				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODO)
+		hit1M:
+		CALL RESET_Bullet_POSITION_Multi_AFTERSHOT	;if there is collision return bullet to fighter to prepare for new shoot 
+        RET
+
+		CHECK_COLLISION_WITH_LEFT_PADDLEM:
+		MOV AX,PADDLE_LEFT_X		
+		add ax,PADDLE_WIDTH 
+		sub ax,10d
+		CMP AX,Bulletp21_X 	;compare bullet x with fighter x + fighter width () - 10 (to acheive the same distance as right fighter)
+		JNG EXIT_BALL_COLLISIONM	;Exit proc if there is no collision
+
+		MOV AX,Bulletp21_Y
+		ADD AX,BulletSize
+		CMP AX,PADDLE_LEFT_Y	;same as right fighter
+		JNG EXIT_BALL_COLLISIONM	;Exit proc if there is no collision
+
+		MOV AX,PADDLE_LEFT_Y
+		ADD AX,PADDLE_HEIGHT
+		CMP Bulletp21_Y,AX 		;same as right fighter
+		JNL EXIT_BALL_COLLISIONM	;Exit proc if there is no collision
+
+		cmp Player1Armour,48d
+		je DecHealthPlayer1M
+		dec Player1Armour
+		jmp hit2M
+		DecHealthPlayer1M:
+		Dec Player1Health	;decrement player health
+		cmp Player1Health , 48d	;Check if heakth is zero, ZERO IN ASCII is 48
+								; we use ascii instead of 0 because it saves calculations when printing these values in status bar
+		je ENDGAME2M				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODOTODOTODOTODOTODOTODOTODOTODOTODO)
+		hit2M:
+		CALL RESET_Bullet_POSITION_Multi_AFTERSHOT ;if there is collision return bullet to fighter to prepare for new shoot
+		;If the bullet is colliding with a fighter then it cant be colliding with anything else
+		;thus exit procedure
+        RET
+        ;
+        ENDGAME1M:	;if the winner is player 1
+		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
+		mov winner,1	;set winner variable to 1
+		Call GAME_OVER	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
+
+		RET
+		
+		;exit this procedure
+		ENDGAME2M:	;	if player 2 wins
+		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
+		mov winner ,2	;set winner var to 2
+		Call GAME_OVER ;Call the THE GAME OVER PROTOCOL
+		RET
+		EXIT_BALL_COLLISIONM: ;exit proc
+
+		MOV AX,PADDLE_RIGHT_X	;get X coardinate of right fighter
+		add ax,10				;ADD 10, because without it in narrow sceen makes the game rippy (Gives the player more wiggle room)
+		CMP Bulletp22_X,AX		;compare between the two, if bullet location is greater, then there might be collision
+									;to make sure we check the y location
+									;if however it is in fact lower, then there can't be collision, check for left fighter now 
+		JL CHECK_COLLISION_WITH_LEFT_PADDLEM2		;if there is no collision then we check for left fighter
+
+		;if it reaches this point then there might be collision with Y axis
+		MOV AX,Bulletp22_Y		;get Y coordinates of bullet
+		CMP AX,PADDLE_Right_Y	;compare it to Y coor of fighter, if it is lower : no collision : Check Left Fighter 
+									;if there is higher there might be collision
+		JNG CHECK_COLLISION_WITH_LEFT_PADDLEM2	;if there is no collision Check Left Fighter
+
+		;if it reaches this point then there might be collision
+		;now we know it is in the X axis collsion range
+		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
+		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
+		;If Not then No collision, we check for left paddle 
+		MOV AX,PADDLE_Right_Y	;get y coordinate of fighter
+		ADD AX,PADDLE_HEIGHT	;add fighter height, now we have the last Y pixel of the fighter
+		CMP Bulletp22_Y,AX		;Check and see if bullet Y is less than Fighter Y + Fighter Height
+		JG CHECK_COLLISION_WITH_LEFT_PADDLEM2		;if there is no collision Check Left Fighter
+
+		;if it reaches this point the ball is colliding with the right paddle For Sure
+		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
+		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+		;decrement player armour
+		;check if armour is zero
+		cmp Player2Armour , 48d
+		je DecHealthPlayer2M2
+		Dec Player2Armour
+		Jmp hit1M2
+		DecHealthPlayer2M2:
+        Dec Player2Health	;decrement player health
+		cmp Player2Health , 48d ;Check if heakth is zero, ZERO IN ASCII is 48
+								; we use ascii instead of 0 because it saves calculations when printing these values in status bar 
+		je ENDGAME1M				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODO)
+		hit1M2:
+		CALL RESET_Bullet_POSITION_Multi_AFTERSHOT	;if there is collision return bullet to fighter to prepare for new shoot 
+        RET
+
+		CHECK_COLLISION_WITH_LEFT_PADDLEM2:
+		MOV AX,PADDLE_LEFT_X		
+		add ax,PADDLE_WIDTH 
+		sub ax,10d
+		CMP AX,Bulletp22_X 	;compare bullet x with fighter x + fighter width () - 10 (to acheive the same distance as right fighter)
+		JNG EXIT_BALL_COLLISIONM2	;Exit proc if there is no collision
+
+		MOV AX,Bulletp22_Y
+		ADD AX,BulletSize
+		CMP AX,PADDLE_LEFT_Y	;same as right fighter
+		JNG EXIT_BALL_COLLISIONM2	;Exit proc if there is no collision
+
+		MOV AX,PADDLE_LEFT_Y
+		ADD AX,PADDLE_HEIGHT
+		CMP Bulletp22_Y,AX 		;same as right fighter
+		JNL EXIT_BALL_COLLISIONM2	;Exit proc if there is no collision
+
+		cmp Player1Armour,48d
+		je DecHealthPlayer1M2
+		dec Player1Armour
+		jmp hit2M
+		DecHealthPlayer1M2:
+		Dec Player1Health	;decrement player health
+		cmp Player1Health , 48d	;Check if heakth is zero, ZERO IN ASCII is 48
+								; we use ascii instead of 0 because it saves calculations when printing these values in status bar
+		je ENDGAME2M2				;if Player 2 health and armour == 0 then jump to end game which initiates the Win or Draw Protocal(TODOTODOTODOTODOTODOTODOTODOTODOTODO)
+        RET	
+		ENDGAME2M2:	;	if player 2 wins
+		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
+		mov winner ,2	;set winner var to 2
+		Call GAME_OVER ;Call the THE GAME OVER PROTOCOL
+		RET
+		EXIT_BALL_COLLISIONM2:
+
+		RET
+MoveMultiShot ENDP
+
+
+
+DrawMultiShot PROC
+            mov ax, 0A000h      ; to graphics region in memory (REFER TO LECTURE 10, tha second part right after jump types, the video ram part) 
+            mov es, ax  		;set es to point to video ram first part 
+
+			;DRAWING FIRST PLAYER BULLET
+            MOV AX,Bulletp21_Y 					;set the initial line (Y) in ax
+           	MOV DX,Bulletp21_X					;set the initial line (X) in dx
+        	mov cx, WINDOW_WIDTH				;set cx to 320, window width 
+        	mul cx								;mul ax by cx (Y location or row * window width or 320)
+        	add ax,Bulletp21_X					;add column
+        	mov di, ax      ; (row*320+col)  	;set di with the exact location to draw
+            mov Al,0CH							;light red pixel colour 
+            mov cx,BulletSize       			;loop to write bullet size number of pixels 
+            rep STOSB							;repeat store single byte and dec cx untill cx = 0
+        	MOV AX,Bulletp21_Y					;Repeat as above but add windowwidth to location (as if going to new line)
+        	mov cx, WINDOW_WIDTH				;put 320 in cx
+        	mul cx								;mul ax with cx just like above 
+        	add ax,Bulletp21_X					;add column
+        	add  ax,WINDOW_WIDTH				;add window width to get the next row 
+        	mov di, ax							;set di with new location		
+        	mov Al,0CH							;light red pixel colour 
+        	mov cx,BulletSize 					;loop to write bullet size number of pixels
+        	rep STOSB
+			;DRAWING FIRST PLAYER BULLET
+            MOV AX,Bulletp22_Y 					;set the initial line (Y) in ax
+           	MOV DX,Bulletp22_X					;set the initial line (X) in dx
+        	mov cx, WINDOW_WIDTH				;set cx to 320, window width 
+        	mul cx								;mul ax by cx (Y location or row * window width or 320)
+        	add ax,Bulletp22_X					;add column
+        	mov di, ax      ; (row*320+col)  	;set di with the exact location to draw
+            mov Al,0CH							;light red pixel colour 
+            mov cx,BulletSize       			;loop to write bullet size number of pixels 
+            rep STOSB							;repeat store single byte and dec cx untill cx = 0
+        	MOV AX,Bulletp22_Y					;Repeat as above but add windowwidth to location (as if going to new line)
+        	mov cx, WINDOW_WIDTH				;put 320 in cx
+        	mul cx								;mul ax with cx just like above 
+        	add ax,Bulletp22_X					;add column
+        	add  ax,WINDOW_WIDTH				;add window width to get the next row 
+        	mov di, ax							;set di with new location		
+        	mov Al,0DH							;light red pixel colour 
+        	mov cx,BulletSize 					;loop to write bullet size number of pixels
+        	rep STOSB							;repeat store single byte and dec cx untill cx = 0
+            RET
+
+RET
+DrawMultiShot ENDP
 ;Player Wins Proc 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1858,23 +2242,62 @@ GAME_OVER ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;RESET Bullet Position Procedure
-;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-;
-;TODO: IMPLEMENT SPACE BAR PEW PEW PEW
-;
-;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;description
+RESET_Bullet_POSITION_Multi PROC
+	cmp IsMultiShotShot , 0
+	je GetReadyForMultiShot
+	RET
+	GetReadyForMultiShot:
+	cmp MultiShooter,2
+	je SecondPlayer
+	MOV AX,PADDLE_LEFT_X
+	add AX,PADDLE_WIDTH 
+	mov Bulletp21_X, ax
+	mov Bulletp22_X, ax
+	mov MULTISHOT_VELOCITYX1 , 4d
+	mov MULTISHOT_VELOCITYX2 , 4d
+	MOV AX,PADDLE_LEFT_Y
+	add ax,19d			
+	mov Bulletp21_Y, ax
+	mov Bulletp22_Y, ax
+	mov MULTISHOT_VELOCITYY1 , 4d
+	mov MULTISHOT_VELOCITYY2 , 4d
+	NEG MULTISHOT_VELOCITYY2
+	RET
+	SecondPlayer:
+	MOV AX,PADDLE_RIGHT_X 				
+	sub ax, BulletSize														 
+	mov Bulletp21_X, ax
+	mov Bulletp22_X, ax
+	mov MULTISHOT_VELOCITYX1 , 4d
+	mov MULTISHOT_VELOCITYX2 , 4d
+	NEG MULTISHOT_VELOCITYX1
+	NEG MULTISHOT_VELOCITYX2
+	MOV AX,PADDLE_RIGHT_Y
+	add ax,19							
+	mov Bulletp21_Y, ax
+	mov Bulletp22_Y, ax
+	mov MULTISHOT_VELOCITYY1 , 4d
+	mov MULTISHOT_VELOCITYY2 , 4d
+	NEG MULTISHOT_VELOCITYY2		
+RET	
+RESET_Bullet_POSITION_Multi ENDP
+;description
+RESET_Bullet_POSITION_Multi_AFTERSHOT PROC
+Mov IsMultiShotShot, 0
+mov MultiShooter, 0
+
+RET	
+RESET_Bullet_POSITION_Multi_AFTERSHOT ENDP
 
 RESET_Bullet_POSITION proc NEAR				;Procedure that might change later, for now resets bullet to blaster
 
    		MOV AX,PADDLE_LEFT_X
 		add AX,PADDLE_WIDTH 				;make it shoot from center of blaster > +(width)	
 		MOV Bulletp11_X,AX 					;setting current X-coordinate of the bullet to blasters of fighter1
-
 		MOV AX,PADDLE_LEFT_Y
 		add ax,19							;make it shoot from center of fighter (height/2 - 1)
 		MOV Bulletp11_Y,AX 					;setting current Y-coordinate of the bullet to blasters of fighter1 
@@ -1890,12 +2313,11 @@ RESET_Bullet_POSITION2 proc NEAR
 		sub ax, BulletSize					;becuase x coordinate of bullet is it's rightmost upmost point
 											;so we need to subtract its size to make it shoto similar to fighter 1
 		MOV Bulletp12_X,AX 					;setting current X-coordinate of the bullet to blasters of fighter2 
-
+	
 		MOV AX,PADDLE_RIGHT_Y
 		add ax,19							;make it shoot from center of fighter (height/2 - 1)
 		MOV Bulletp12_Y,AX 					;setting current Y-coordinate of the bullet to blasters of fighter2 
 		mov IsShot2 ,0
-
 											;EXIT PROCEDURE
 RET
 RESET_Bullet_POSITION2 ENDP
