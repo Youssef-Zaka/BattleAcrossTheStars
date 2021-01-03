@@ -41,6 +41,7 @@ lvl1 DB "Level 1",'$' 	;string displayer at level selection
 lvl2 DB "Level 2",'$'	;string displayer at level selection
 lvl3 DB "Level 3",'$'	;string displayer at level selection
 PlayerName DB 15 DUP(?),'$'	;15 Bytes used to hold username, can only start with a letter    
+Player2Name DB "Player 2"
 EnterName DB "Please Enter your name: ",0Dh,0Ah,09h, '$' 	;string displayer at Name selection
 CREDITS DB "BY CUFE _ MP1 _ TEAM _ 8",'$'
 PressEnter DB "Press ENTER key to continue";string displayer at Name selection
@@ -109,6 +110,7 @@ Player2H DB 'Armour'				;String to be displayed at status bar
 EndPlayer2H Db ' '					;Used to print above string
 EndPowerUpTimer Db 0
 MaxArmour DB 0
+PressF4 DB "BACK - F4"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;This is the pixels of the fighter space ship used to draw the paddle;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;40x40 pixels, width x height;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -711,14 +713,14 @@ DrawMeteoritePowerUPProcedure ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 StatusBar proc NEAR 	  ;Procedure Resposible for updating status bar/////PHASE 3> Should also have text mode 
 ;GETTING READY TO DRAW A PURPLE LINE BEFORE STATUS AREA OF THE SCREEN
-mov cx,0				;set x axis location to 0  
+mov cx,120d				;set x axis location to 0  
  mov dx,WINDOW_HEIGHT	;set y axis location to Window Height variable
  mov al,5d				;pixel colour
  mov ah,0ch				;Draw Pixel config
  Status:					;loop used to draw the line
  int 10h					;draw a pixel
  inc cx					;inc x axis position
- cmp cx,WINDOW_WIDTH		;check if it reached the end >> 320 pixels or window width
+ cmp cx,200d		;check if it reached the end >> 320 pixels or window width
  jnz Status				;if not, repeat to drow a horizontal line of length = window length
 
 
@@ -927,6 +929,49 @@ mov ah, 13h
 int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+mov al, 1
+mov bh, 0
+mov bl,  00000110b
+mov cx, 9 ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh, 5d
+mov dl,15d
+push DS
+pop es
+mov bp, offset PressF4
+mov ah, 13h
+int 10h
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+mov al, 1
+mov bh, 0
+mov bl,  00000110b
+mov cx, 15 ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh,4d
+mov dl,0d
+push DS
+pop es
+mov bp, offset PlayerName
+mov ah, 13h
+int 10h
+
+mov al, 1
+mov bh, 0
+mov bl,  00000110b
+mov cx, 15 ; calculate message size. 
+mov dx, WINDOW_HEIGHT
+mov dh, dl
+sub dh,4d
+mov dl,25d
+push DS
+pop es
+mov bp, offset PlayerName
+mov ah, 13h
+int 10h
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;END OF STATUS BAR UPDATE PROCEDURE
 RET
 StatusBar ENDP
@@ -1133,6 +1178,8 @@ LevelThree ENDP
 		JZ CHECK_RIGHT_PADDLE_MOVEMENTJMPER
         MOV AH,00h  ;get key from buffer
 		INT 16h 	;00ah/16h
+		CMP     Ah, 3Eh							;check for space bar
+		JE      F4
 		CMP     AL, 32d 							;check for space bar
 		JNE      checkP2
 		cmp IsShot1 , 0
@@ -1144,6 +1191,10 @@ LevelThree ENDP
 		jne checkP2
 		mov IsMultiShotShot, 1d
 		
+		jmp checkP2
+		F4:
+		mov winner, 1
+		RET
 		checkP2:
 		CMP     AL, 47d 							;check for /
 		JNE      paddlemovement 
@@ -2404,6 +2455,7 @@ RESET_Bullet_POSITION2 ENDP
 	;If not Dont take input, if yes take input
 
     GetInput:	;loop label
+	mov cx,0
     mov     ah, 7  ;take input
 	int     21h     
 
@@ -2441,8 +2493,10 @@ RESET_Bullet_POSITION2 ENDP
 
     BackSpace: 
     dec cx	; Counter is decremented (because the erased letter would have incremented it)
+	cmp cx,0
+	jb GetInput
     mov di,cx	;move cx to di to set di to the location of the letter to be removed
-    mov PlayerName[di] , '$'	;Type in Dollar sign instead of old value
+    mov PlayerName[di] , ' '	;Type in Space sign instead of old value
     mov     ah, 2  	
 	mov     dl, 8d	
     int     21h 		;Do A BAckspace
@@ -2465,7 +2519,7 @@ RESET_Bullet_POSITION2 ENDP
     JE EndofGetPlayerName	;if user pressed enter, dont take more values, jump to end 
     cmp al,8d				;check if backspace
     jE BackSpace			;initiate backspace protocoles
-    cmp cx,15 ;check if the name size limit reached (15 chars)
+    cmp cx,15;check if the name size limit reached (15 chars)
     JE GetRestOfName	;if it did,, dont save it and wait for enter key
     mov     ah, 2  		;if it did not, then save it to variable
 	mov     dl, al
@@ -2477,16 +2531,16 @@ RESET_Bullet_POSITION2 ENDP
     
 	;sequence used to put a dollar sign at the end of the name if it was shorter than 15 chars
 	;refer to variable in DATA SEGMENT, there is a dollar sign right after the name's 15 chars
-	Dolla:
-    mov di,cx	
-    mov al,'$'	
-    mov PlayerName[di] , al	;put a dolla sign at end of name
-    jmp REtGetPlayerName	;move to end of Protocol
+	; Dolla:
+    ; ; mov di,cx	
+    ; ; mov al,'$'	
+    ; ; mov PlayerName[di] , al	;put a dolla sign at end of name
+    ; jmp REtGetPlayerName	;move to end of Protocol
 
 
     EndofGetPlayerName: ;if user pressed enter then:
-    cmp cx,15			;check if user input is less than 15 chars
-    Jb Dolla 			;if yes jump to dolla sequence to add $ at its end
+    ; cmp cx,15			;check if user input is less than 15 chars
+    ; Jb Dolla 			;if yes jump to dolla sequence to add $ at its end
     REtGetPlayerName:	;if it was 15 then exit without doing anything
     RET
     GetPlayerName ENDP
@@ -2559,7 +2613,7 @@ RESET_Bullet_POSITION2 ENDP
     getnum:
     mov     ax, 1  ;take input
 	int     16h       
-    jz getnum
+    jnz getnum
     ; check if input is f1 or f2 or ESC, other wise go back to taking another input
 	cmp     ah, 3Bh
 	jE     StartChatMode  
