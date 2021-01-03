@@ -15,21 +15,8 @@
 ;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 
 ;GENERAL TODOS:
-;
-;SWITCH TO 16 COLORS ONLY IMAGES and smaller pixels >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(WAITING ON SHEBL)
-;Recolour main and utility menus (grey = ya3 GREY > BLACK) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;TEXT COLOR > WHITE / GREEN / ORANGE / RED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;Calculate coordinates to centralize texts (such a P I T A)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;Implement space bar goes PEW PEW PEEEEEW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;newgame variable reset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;switch movement to arrow keys (NECCESSARY FOR PHASE 3)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE);
+;RECOMMENT ON THE LATEST CHANGES :(WORK IN PROGRESS)
 ;have all mesages be of a static size (PHASE 3? OPTIONAL, CHECK DOCUMENT)
-;AT GAME OVER: Show Scores for 5 seconds >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;Level Modifiers (LIFE ARMOUR AND SO ON)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(CURRENT WORK IN PROGRESS)
-;try the 640x400 video mode if allowed, if it looks better, use it, better over all for in game chat mode (Limited Colours, BAD IDEA)
-;Change Health and Armour strings to images for getter looking game >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>(DONE)
-;A5er 7AGA NBOS 3LEHA >> HORIZONTAL MOVEMENT (NOT A MUST, its just nice to have)
-;we a5er 7aga bardo el keyboard rollover (example lwwwwwwwwwwww , l key was pressed first, w after, both were held together)
 ;
 ;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 
@@ -121,6 +108,7 @@ EndPlayer1H Db ' '					;Used to print above string
 Player2H DB 'Armour'				;String to be displayed at status bar
 EndPlayer2H Db ' '					;Used to print above string
 EndPowerUpTimer Db 0
+MaxArmour DB 0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;This is the pixels of the fighter space ship used to draw the paddle;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;40x40 pixels, width x height;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -358,10 +346,23 @@ Call DisablePowerUpEffects
    xor  dx, dx
    mov  cx, 6   
    div  cx       ; here DL contains the remainder of the division - from 0 to 4
-   mov PowerUpCreateCheck, DL		; put that number into powerups (it becomes the active power up)
-   mov ActivePower, DL		; put that number into powerups (it becomes the active power up)
-; mov PowerUpCreateCheck, 5
-; mov ActivePower, 5
+   cmp GameLevel , 2
+   JE DONITHING
+   cmp GameLevel , 3
+   JE LVLTHREE
+	;LVLONE:
+	cmp dl, 5
+	jne DONITHING
+	mov dl,3
+	jmp DONITHING
+	LVLTHREE:
+	cmp dl ,4
+	jne DONITHING
+	mov dl,5
+	DONITHING:
+   mov PowerUpCreateCheck, dl		; put that number into powerups (it becomes the active power up)
+   mov ActivePower, dl		; put that number into powerups (it becomes the active power up)
+
 CALL CreatePowerUp			;if new, create new
 mov PowerUpCreateCheck ,  6d ; USED FOR TESTING, if act pu = 6, no power up, generate one
 ENDPOWER:
@@ -431,6 +432,12 @@ inc Player1Health
 RET	
 INCREMETHArmour:
 inc Player1Armour
+mov al,Player1Armour
+cmp al , MaxArmour
+ja DontIncArmour
+RET
+DontIncArmour:
+Dec Player1Armour
 RET
 INCREMETSpeed:
 add Bullet_VELOCITY_X , 4d
@@ -464,7 +471,11 @@ INCREMETHealth2:
 inc Player2Health
 RET	
 INCREMETHArmour2:
+mov al,Player2Armour
+cmp al , MaxArmour
+je DontIncArmour2
 inc Player2Armour
+DontIncArmour2:
 RET
 INCREMETSpeed2:
 add Bullet_VELOCITY_X2 , 4d
@@ -1049,17 +1060,16 @@ mov Player1Health,52d	;set p1 health to 4 (ascii used for printing, 48d ascii = 
 mov Player2Health,52d	;same for p2
 mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
-mov Bullet_VELOCITY_X , 4d;
-mov Bullet_VELOCITY_X2 , 4d;
+mov Bullet_VELOCITY_X , 6d;
+mov Bullet_VELOCITY_X2 , 6d;
 CALL RESET_Bullet_POSITION_Multi
 Mov IsMultiShotShot , 0
 mov MultiShooter , 0
 mov ActivePower , 0
 mov PowerUpCreateCheck , 0
-;game speed
-;armour enable
-;max armour
-;extra mods
+mov WINDOW_BOUNDS , 6d
+mov MaxArmour , 4d
+ADD MaxArmour , 48d
 
 ;; Reset game mode ???
 RET
@@ -1071,14 +1081,16 @@ mov Player1Health,51d	;set p1 health to 4 (ascii used for printing, 48d ascii = 
 mov Player2Health,51d	;same for p2
 mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
-mov Bullet_VELOCITY_X , 6d;
-mov Bullet_VELOCITY_X2 , 6d;
+mov Bullet_VELOCITY_X , 8d;
+mov Bullet_VELOCITY_X2 , 8d;
 CALL RESET_Bullet_POSITION_Multi
 Mov IsMultiShotShot , 0
 mov MultiShooter , 0
 mov ActivePower , 0
 mov PowerUpCreateCheck , 0
-;to be added
+mov WINDOW_BOUNDS , 6d
+mov MaxArmour , 2d
+ADD MaxArmour , 48d
 RET
 LevelTwo ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1088,14 +1100,16 @@ mov Player1Health,50d	;set p1 health to 4 (ascii used for printing, 48d ascii = 
 mov Player2Health,50d	;same for p2
 mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
-mov Bullet_VELOCITY_X , 6d;
-mov Bullet_VELOCITY_X2 , 6d;
+mov Bullet_VELOCITY_X , 10d;
+mov Bullet_VELOCITY_X2 , 10d;
 CALL RESET_Bullet_POSITION_Multi
 Mov IsMultiShotShot , 0
 mov MultiShooter , 0
 mov ActivePower , 0
 mov PowerUpCreateCheck , 0
-;to be added
+mov WINDOW_BOUNDS , 16d
+mov MaxArmour , 1d
+ADD MaxArmour , 48d
 RET
 LevelThree ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
