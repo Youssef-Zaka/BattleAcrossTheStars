@@ -17,20 +17,24 @@
 ;GENERAL TODOS:
 ;RECOMMENT ON THE LATEST CHANGES :(WORK IN PROGRESS)
 ;have all mesages be of a static size (PHASE 3? OPTIONAL, CHECK DOCUMENT)
-;
+;DRAW? no one wins?PHASE 3
 ;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 .MODEL SMALL
 .STACK 100
 ;******  Data Segment ******
 .DATA
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;start of data segment 
-GAMEOVER db "GAME OVER"
-ENDGAMEOVER db ' '
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+GAMEOVER db "GAME OVER" ;String displayed at GameOver
+ENDGAMEOVER db ' '	;A helper string used to calculate game over message length, Offset ENGAMEOVER - offset GAMEOVER = massage length
 player1wins   db      "Player one WON" , '$' ;display when p1 wins
 player2wins   db      "Player two WON" , '$' ; display when p2 wins
-winner Db 0d	;used to know who the winner is, 1 or 2, if 0, no one won, variable is checked after every ball collision
+winner Db 0d	;used to know who the winner is, 1 or 2, if 0, no one won, variable is checked after every ball collision,
+					; used to return from game mode and back to main menu to get new input for a new game
 GameLevel DB ?	;used to know which game level the user chose
 Player1Health DB ?	;current health of player 1
 Player2Health DB ? 	;current health of player 2
@@ -40,12 +44,13 @@ ChooseGameLvl DB "Please Choose Game Level (press 1, 2, or 3)",'$' 	;string disp
 lvl1 DB "Level 1",'$' 	;string displayer at level selection
 lvl2 DB "Level 2",'$'	;string displayer at level selection
 lvl3 DB "Level 3",'$'	;string displayer at level selection
-PlayerName DB 15 DUP(?),'$'	;15 Bytes used to hold username, can only start with a letter    
-Player2Name DB "Player 2"
+PlayerName DB 15 DUP(?),'$'	;15 Bytes used to hold username, can only start with a letter, Can have special charecters from second leter onwards    
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Player2Name DB "Player 2"  	;Use it in phase 3 if needed
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 EnterName DB "Please Enter your name: ",0Dh,0Ah,09h, '$' 	;string displayer at Name selection
-CREDITS DB "BY CUFE _ MP1 _ TEAM _ 8",'$'
 PressEnter DB "Press ENTER key to continue";string displayer at Name selection
-ENDPRESSENTER DB '$' 	
+ENDPRESSENTER DB '$' 	;Used in printing PressEnter to Continue , can also be used to calculate string size as needed in some menues and not needed in others
 msg1    db      "Please select a mode" , '$' 	;string displayer at Mode selection
 msg2	    db      "press F1 for Chatting mode", '$'	;string displayer at Mode selection/chat mode
 msg3	    db      "press F2 for Game mode ", '$'	;string displayer at Mode selection/game mode
@@ -53,64 +58,72 @@ msg4	    db      "press ESC to exit", '$'	;string displayer at Mode selection / 
 msg0 db      "Thank you for playing our game, press any key to exit",0Dh,0Ah,09h, '$'	;string displayer when exiting program
 WINDOW_WIDTH DW 140h				;the width of the window (320 pixels)
 WINDOW_HEIGHT DW 150d				;the height of the window of accesiable gameing area(150 pixels)
-WINDOW_BOUNDS DW 6d					;variable used to check collisions early
-
-TIME_AUX DB 0 						;variable used when checking if the time has changed
+WINDOW_BOUNDS DW 6d					;variable used to check collisions with window bounds early
+										;6 and 16d works fine, other numbers will require the change of fighter speed
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+TIME_AUX DB 0 						;Auxelary time variable that is used when checking if the time has changed
 TIME_AUX_SEC DB 0					;Variable used to check if five seconds had passed at game over
-PRINTSECONDS DB 0
-
-IsShot1 DB 1
-IsShot2 DB 1
-IsMultiShotShot DB 0
+PRINTSECONDS DB 0					;Variable used to check if five seconds had passed at game over
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+IsShot1 DB 1						;p1: Variable that determines if a bullet is shot or not, if not wiat for space bar
+IsShot2 DB 1						;p2: Variable that determines if a bullet is shot or not, if not wiat for front slash /
+IsMultiShotShot DB 0				;Variable that determines if a multishot is shot, if not wait for respective action key
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;The Below Variables
+;the first one is used to randomize the the spawned power up and draw it 
+;the second one is used to hold the final value after randomization is done
 PowerUpCreateCheck DB 6d  			; 6=NONE, 5 = Meteorite, 4 = health, 3 = armour, 2 = Speed Up, 1= Freeze , 0 = multishot
 ActivePower DB 6d					; 6=NONE, 5 = Meteorite, 4 = health, 3 = armour, 2 = Speed Up, 1= Freeze , 0 = multishot
-PowerTimer DB 0
-PowerUpCollision DB 0
-
-;p1
+PowerTimer DB 0						;Used to reset PowerUpCollision (the below variable) after a powerup is taken
+PowerUpCollision DB 0				;Used to check if a powerup is taken by a player
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;p1 bullet
 Bulletp11_X DW 0Ah 			        	;current X position (column) of the first player bullet
 Bulletp11_Y DW 30d 			        	;current Y position (line) of the first player bullet
+;p2 bullet
 Bulletp12_X DW 278d 					;current X position (column) of the second player bullet 
 BulletP12_Y DW 119D 					;current Y position (line) of the second player bullet
-;p2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;MultiShot
 Bulletp21_X DW 0A0h				        ;current X position (column) first Multishot
 Bulletp21_Y DW 64h 			        	;current Y position (line) of first Multishot
 Bulletp22_X DW 0Ah 						;current X position (column) of the second Multishot 
 BulletP22_Y DW 0Ah 						;current Y position (line) of the second Multishot
 MultiShooter DB 0						;THE PLAYER WITH THE POWERUP
-Bullet_VELOCITY_Y DW 04h				;Y (vertical) velocity of the ball      
-MULTISHOT_VELOCITYX1 DW 4d
-MULTISHOT_VELOCITYX2 DW 4d
-MULTISHOT_VELOCITYY1 DW 4d
-MULTISHOT_VELOCITYY2 DW 4d
-
+MULTISHOT_VELOCITYX1 DW 4d				; Horizontal Velocity of multishot 1 MUST BE EVEN NUMBER
+MULTISHOT_VELOCITYX2 DW 4d				; Vertical Velocity of multishot 1   MUST BE EVEN NUMBER
+MULTISHOT_VELOCITYY1 DW 4d				; Horizontal Velocity of multishot 2 MUST BE EVEN NUMBER
+MULTISHOT_VELOCITYY2 DW 4d				; Vertical Velocity of multishot 2   MUST BE EVEN NUMBER
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Bullet Variables
 BulletSize DW 08h						;size of the bullet (how many pixels does the bullet have) w x h
 Bullet_VELOCITY_X DW 6d 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
 Bullet_VELOCITY_X2 DW 6d 				;X (horizontal) velocity of the ball MUST BE EVEN NUMBER
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;FighterVariables P1 (Left Player)
 PADDLE_LEFT_X DW 0d					;current X position of the left paddle or fighter or space ship, call it whatever
 PADDLE_LEFT_Y DW 0Ah 				;current Y position of the left paddle or fighter or space ship, call it whatever
 OldPaddleLeftX DW ?					;Old X position of the left paddle or fighter or space ship, call it whatever
-OldPaddleLeftY DW ?					;Old X position of the left paddle or fighter or space ship, call it whatever
-
+OldPaddleLeftY DW ?					;Old Y position of the left paddle or fighter or space ship, call it whatever
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;FighterVariables P2 (Right Player)
 PADDLE_RIGHT_X DW 280d 				;current X position of the right paddle or fighter or space ship, call it whatever
-PADDLE_RIGHT_Y DW 100D 				;current X position of the right paddle or fighter or space ship, call it whatever
+PADDLE_RIGHT_Y DW 100D 				;current Y position of the right paddle or fighter or space ship, call it whatever
 OldPaddleRightX DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
-OldPaddleRightY DW ?				;Old X position of the right paddle or fighter or space ship, call it whatever
-
+OldPaddleRightY DW ?				;Old Y position of the right paddle or fighter or space ship, call it whatever
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Variables used in drawing spaceship and other collision calculations
 PADDLE_WIDTH DW 40d					;default width of the paddle, depends on picture width (horizontal pixels count)
 PADDLE_HEIGHT DW 40d				;default height of the paddle,  depends on picture height (Vertical pixels count)
-
-PADDLE_VELOCITY DW 8h 				;(MUST BE number 96 devisor (4,6,8,12,16,24 are acceptable)) default velocity of the paddle or fighter or space ship, call it whatever
-PADDLE_VELOCITY2 DW 8h
-Player1H DB 'Health'				;String to be displayed at status bar
-EndPlayer1H Db ' '					;Used to print above string
-Player2H DB 'Armour'				;String to be displayed at status bar
-EndPlayer2H Db ' '					;Used to print above string
-EndPowerUpTimer Db 0
-MaxArmour DB 0
-PressF4 DB "BACK - F4"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;fighet velocities
+PADDLE_VELOCITY DW 8h 				;;DO NOT CHANGE THIS VARIABLE WITHOUT PROPER MATHEMATICAL CALCULATIONS (CHECK WINDOW BOUNDS VARIABLE)
+										;default velocity of the paddle or fighter or space ship, call it whatever
+PADDLE_VELOCITY2 DW 8h				;DO NOT CHANGE THIS VARIABLE WITHOUT PROPER MATHEMATICAL CALCULATIONS (CHECK WINDOW BOUNDS VARIABLE)
+										;default velocity of the paddle or fighter or space ship, call it whatever
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+MaxArmour DB 0  ;Variable Used to calculate the maximum armour depending on level
+PressF4 DB "BACK - F4"	;String displayed to prrompt user to use f4 if he wishes to leave game mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;This is the pixels of the fighter space ship used to draw the paddle;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;40x40 pixels, width x height;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -167,7 +180,7 @@ FighterImage DB 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 
  HeartImg DB 16, 16, 112, 40, 112, 16, 16, 16, 112, 40, 40, 40, 112, 16, 112, 40, 40, 40, 40, 40, 112, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 112, 40, 40, 112, 40 
  DB 40, 112, 16, 112, 112, 16, 112, 112, 16
 
-InverseHeartImg DB ?
+InverseHeartImg DB ? 	;Variable used to draw the image
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF HEART PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -178,7 +191,7 @@ InverseHeartImg DB ?
 ArmourImage DB 16, 16, 1, 32, 1, 16, 16, 16, 1, 32, 32, 32, 1, 16, 16, 1, 32, 31, 32, 1, 16, 1, 32, 32, 31, 32, 32, 1, 1, 32, 32, 31, 32, 32, 1, 1, 32, 32, 32, 32 
  DB 32, 1, 16, 1, 32, 32, 32, 1, 16
 
-InverseArmourImage DB ?
+InverseArmourImage DB ? 	;Variable used to draw the image
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Armour PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -189,7 +202,7 @@ InverseArmourImage DB ?
 FreezeImage DB 31, 53, 16, 53, 16, 53, 31, 53, 31, 16, 31, 16, 31, 53, 16, 16, 53, 31, 53, 16, 16, 53, 31, 31, 53, 31, 31, 53, 16, 16, 53, 31, 53, 16, 16, 53, 31, 16, 31, 16 
  DB 31, 53, 31, 53, 16, 53, 16, 53, 31
 
- InverseFreezeImage DB ?
+ InverseFreezeImage DB ? 	;Variable used to draw the image
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Freeze PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -200,7 +213,7 @@ FreezeImage DB 31, 53, 16, 53, 16, 53, 31, 53, 31, 16, 31, 16, 31, 53, 16, 16, 5
 MeteorImage DB 37, 37, 37, 37, 37, 108, 16, 37, 108, 108, 37, 108, 16, 16, 37, 108, 37, 37, 16, 37, 16, 37, 37, 37, 108, 16, 16, 37, 37, 108, 16, 16, 37, 16, 16, 108, 16, 37, 16, 16 
  DB 37, 16, 16, 16, 16, 37, 16, 16, 37
 
-InverseMeteorImage DB ?
+InverseMeteorImage DB ?	;Variable used to draw the image
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Meteor PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -211,7 +224,7 @@ InverseMeteorImage DB ?
 SpeedImage DB 16, 16, 116, 43, 116, 16, 16, 16, 16, 116, 43, 116, 16, 16, 116, 16, 116, 43, 116, 16, 116, 116, 43, 43, 43, 43, 43, 116, 16, 116, 43, 43, 43, 116, 16, 16, 16, 116, 43, 116 
  DB 16, 16, 16, 16, 16, 116, 16, 16, 16
 
-InverseSpeedImage DB ?
+InverseSpeedImage DB ?	;Variable used to draw the image
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF Speed PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -221,35 +234,44 @@ InverseSpeedImage DB ?
 MultiShotImage DB 16, 111, 111, 111, 111, 111, 16, 16, 16, 111, 16, 111, 16, 16, 16, 16, 16, 40, 16, 16, 16, 16, 16, 40, 16, 40, 16, 16, 16, 40, 16, 40, 16, 40, 16, 40, 16, 16, 16, 16 
  DB 16, 40, 16, 16, 16, 40, 16, 16, 16
 
-InverseMultiShotImage DB ?
+InverseMultiShotImage DB ?	;Variable used to draw the image
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF MultiShot PIXELS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;END OF DATA SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+ ;****************************************************************************************************************************************************************
+ ;________________________________________________________________________________________________________________________________________________________________
+ ;---------------------------------------------------------------------------------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;START OF CODE SEGMENT;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
  ;start of code
 .CODE 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Main Procedure first gets the player name, and then Goes into an infinite loop of calling the main menu 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	MAIN PROC FAR                       ;main proc
 	MOV AX,@DATA 						;save on the AX register the contents of the DATA segment
 	MOV DS,AX                           ;save on the DS segment the contents of the AX
     CALL GetPlayerName					;Get Player names
-	infLoop:							;key repeating until esc key is pressed in main menu
+	infLoop:							;keep repeating until esc key is pressed in main menu
     CALL MainMenu						;keep calling main menu if the player chooses so
-	mov cx,3d							;used to set up inf loop
-	cmp cx,2d							;used to set up inf loop
-	JNE infLoop							;used to set up inf loop
-
+	mov cx,2d							;used to set up inf loop
+	cmp cx,3d							;used to set up inf loop
+	JNE infLoop							;used to set up inf loop 
+	;Why use 3d and 2d? because it is funny to do so :D 
+	;This game is a 2D game, thus Move 2D in cx, Now Ask if this game is a 3D game? no its not, Jump back to main menu
+	;Keep going till this game turns from a 2D game to 3D game, IMPOSSIBLE , INFINITE LOOP :D  
     MOV AH,4CH        					;control is back to the system 
     INT 21H								;control is back to the system
 MAIN ENDP								;end of main proc
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Game Mode Procedure, A loop that controlls the Game flow, It is called from main menue if user chooses game mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     GameMode proc NEAR 			;Game Mode Procedure that controlls and updates the game
     CALL ChooseLevel			;initiates game level selection
@@ -264,132 +286,139 @@ MAIN ENDP								;end of main proc
 		;if it reaches this point, it's because this is the new frame
 		MOV TIME_AUX,DL 			;Update time with new frame
 		;CALL CLEAR_SCREEN 			;clearing the screen by restarting the video mode/ CAUSED FLICKERING<>> REMOVED
-									; Instead each element on the screen is drawed in black in old location and redrawin in new location
-
-		CALL PowerUpGeneratorProcedure							
+									; Instead each element on the screen is Erased(drawn in black) in old location and redrawn in new location
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		CALL PowerUpGeneratorProcedure ;Generate a powerUp Every once in awhile (Set to 10 seconds for now)							
         CALL StatusBar				;Updates Status Bar Each Time Step
-		
-		cmp IsShot1 , 0
-		je checkforsecondbullet
-		CALL MOVE_Bullet 
-		checkforsecondbullet:				;calling the procedure to move the Bullets, check for collision remove old bullet locations
-		cmp IsShot2 , 0
-		je drawbulletsthen
-		CALL MOVE_Bullet2 				;calling the procedure to move the Bullets, check for collision remove old bullet locations
-		drawbulletsthen:
-		CALL DrawBullets 				;calling the procedure to draw the bullets
-
-		
-		cmp IsMultiShotShot , 0
-		je ResetMultiPos
-		Call MoveMultiShot
-		cmp IsMultiShotShot , 0
-		je ResetMultiPos
-		Call DrawMultiShot
-		; cmp MultiShooter , 0
-		; je NoMultiShooter
-		ResetMultiPos:
-		CALL RESET_Bullet_POSITION_Multi
-		NoMultiShooter:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		cmp IsShot1 , 0				;Did the first Player Shoot a Bullet? 
+		je checkforsecondbullet		;If Not then Check for the second player
+		CALL MOVE_Bullet 			;if he did shoot, then move the bullet forwards
+										;calling the procedure to move the Bullets, check for collision remove old bullet locations
+		checkforsecondbullet:       ;Check Player 2
+		cmp IsShot2 , 0				;Did he shoot a bullet?
+		je drawbulletsthen			;If yes then Move it 
+		CALL MOVE_Bullet2 			;calling the procedure to move the Bullets, check for collision remove old bullet locations
+		drawbulletsthen:			;Draw Bullets Procedure that checks if a bullet is shot or not and draws it if it was
+		CALL DrawBullets 			;calling the procedure to draw the bullets
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		;SAME AS ABOVE BUT THE CHECKS ARE DONE FOR MULTISHOTS INSTEAD OF NORMAL BULLETS
+		cmp IsMultiShotShot , 0		;was a multishot shot recently?
+		je ResetMultiPos			;if not then Jmp to reset thier position to the blaster of the fighters to get ready for shooting
+		Call MoveMultiShot			;if shot, then move them forward, if they hit a target or are out of bounds, set IsShot to 0
+		cmp IsMultiShotShot , 0		;are they are within bounds and didnt hit a player
+		je ResetMultiPos			; if no then reset position for next multishot
+		Call DrawMultiShot			;if yes then draw them 
+		ResetMultiPos:				;call reset position 
+		CALL RESET_Bullet_POSITION_Multi	;Reset position for multishots (Reset done in all frames)
+												;Checks if there is no multishot power up in place
+												;if there weren't no reseting is done to avoind unnescacary loops 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;												
 		cmp winner,0					;checks if a winner exists
 		jne ReturnToMainMenu			;If someone did win, return to main menu
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		FightersProcedures:
 		CALL Move_Fighters 			;move the paddles or fighters (check for key presses) and remove old paddles
 		CALL DrawFighters 			;draw the paddles or fighters with the updated positions
-
-		JMP	CHECK_TIME 				;repeat every time the system time chamges
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		JMP	CHECK_TIME 				;repeat every time the system time changes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	ReturnToMainMenu:
     RET
     GameMode ENDP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;PowerUp Random Generator
+;Every 10 seconds keep generating random power ups for a second
+;when one second is over the last random powerup is left for the players
+;if hit in between generation. a random unknown powerup activates
+;if a powerup is taken during generation, set collision to 1 and stop generating
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 PowerUpGeneratorProcedure proc NEAR
-
-
 ;GENERATE POWER UP
 MOV AH,2Ch					;get the system time
 INT 21h						;CH = hour CL = minute DH = second DL = 1/100 seconds
-cmp PowerUpCollision , 1
-JE ENDCREATION
-mov PowerTimer ,dh
-
-; cmp DH , 6d					;check for 5 second mark,
-; je Disable			;if so Disable PowerUps
-; cmp DH , 16d				;check for 15 second mark, 
-; je Disable			;if so Disable PowerUps
-; cmp DH , 26d				;check for 25 second mark, 
-; je Disable			;if so Disable PowerUps
-; cmp DH , 36d				;check for 35 second mark, 
-; je Disable			;if so Disable PowerUps
-; cmp DH , 46d				;check for 45 second mark, 				
-; je Disable			;if so Disable PowerUps
-; cmp DH,56d					;check for 55 second mark,
-; JE Disable				;if so Disable PowerUps
-
+cmp PowerUpCollision , 1	;check if a powerup wsa taken during creation
+JE ENDCREATION				;if yes then end creation
+mov PowerTimer ,dh			;if no then put system seconds in dh, used to end creation after 1 second had passed
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 cmp DH , 10d				;check for 10 second mark,
-je GENEREATERANDOM			;if so generate more
+je GENEREATERANDOM			;if so generate PowerUp
 cmp DH , 20d				;check for 20 second mark, 
-je GENEREATERANDOM			;if so generate more
+je GENEREATERANDOM			;if so generate PowerUp
 cmp DH , 30d				;check for 30 second mark, 
-je GENEREATERANDOM			;if so generate more
+je GENEREATERANDOM			;if so generate PowerUp
 cmp DH , 40d				;check for 40 second mark, 
-je GENEREATERANDOM			;if so generate more
+je GENEREATERANDOM			;if so generate PowerUp
 cmp DH , 50d				;check for 50 second mark, 				
-je GENEREATERANDOM			;if so generate more
-cmp DH,0d					;check for 60 seconds mark
+je GENEREATERANDOM			;if so generate PowerUp
+cmp DH,0d					;check for 60 or 0 seconds mark
 JNE ENDPOWER				;if non dont generate
-
-GENEREATERANDOM:
-Call DisablePowerUpEffects
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+GENEREATERANDOM:			;Before creating new power ups, Disable effects of old ones to be more challenging			
+Call DisablePowerUpEffects	;Disable power up procedure
    MOV AH, 00h  ; interrupts to get system time        
    INT 1AH      ; CX:DX now hold number of clock ticks since midnight      
 
-   mov  ax, dx
-   xor  dx, dx
-   mov  cx, 6   
-   div  cx       ; here DL contains the remainder of the division - from 0 to 4
-   cmp GameLevel , 2
-   JE DONITHING
-   cmp GameLevel , 3
-   JE LVLTHREE
+   mov  ax, dx	;get that number in ax to prepare for devision
+   xor  dx, dx	;Dx now = 0	preparing for division
+   mov  cx, 6   ;dividor
+   div  cx       ; here DL contains the remainder of the division - from 0 to 5 (PowerUps, Check ActivePowerUp Variable at Data segment)
+				  ; 6=NONE, 5 = Meteorite, 4 = health, 3 = armour, 2 = Speed Up, 1= Freeze , 0 = multishot
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+;	PLEASE CHECK GAME LEVELS PROCEDURE AS WELL FOR MORE DETAILED EXPLANATIONS			  
+   cmp GameLevel , 2 ;if game level = 2, Medium mode has no modifications , dont change anything, continue with random generation
+   JE DONITHING		;IF YES, DO NOTHING
+   cmp GameLevel , 3 ;if game level = 3, apply level 3 modifications
+   JE LVLTHREE		;IF YES GO TO LEVEL 3
+	 ;OTHERWISE, it is level one, apply level one modifications
 	;LVLONE:
-	cmp dl, 5
-	jne DONITHING
-	mov dl,3
-	jmp DONITHING
-	LVLTHREE:
-	cmp dl ,4
-	jne DONITHING
-	mov dl,5
-	DONITHING:
-   mov PowerUpCreateCheck, dl		; put that number into powerups (it becomes the active power up)
-   mov ActivePower, dl		; put that number into powerups (it becomes the active power up)
-
-CALL CreatePowerUp			;if new, create new
-mov PowerUpCreateCheck ,  6d ; USED FOR TESTING, if act pu = 6, no power up, generate one
+	cmp dl, 5		;if generated power up is meteorite? 
+	jne DONITHING	;if no, then do nothing
+	mov dl,3		;if yes, spawn shield instead
+	jmp DONITHING	;jmp to avoid applying level 3 mods
+	LVLTHREE:		;Level 3 mods
+	cmp dl ,4		;if generated power up is extra life?
+	jne DONITHING	;if no, do nothing
+	mov dl,5		;if yes, then spawn meteorite instead 
+	DONITHING:		
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   	mov PowerUpCreateCheck, dl		; put that number into powerups (it becomes the active power up)
+	mov ActivePower, dl		; put that number into powerups (it becomes the active power up)	
+	;THE ABOVE STEP IS REPEATED ASLONG AS SYSTEM TIME IS 10,20....60, AFTER THAT ONE SECOND PASSES, THE LAST ONE PUT IN HERE IS THE ACTIVE ONE 
+	CALL CreatePowerUp			;Create the new powerup, This procedure draws the power up according to the above 2 variables
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ENDPOWER:
 RET
-ENDCREATION:
-cmp PowerTimer,dh
-je returnfromEndingCreation
-mov PowerUpCollision, 0
+ENDCREATION:					;if collision is on, dont create anymore 
+cmp PowerTimer,dh				;check if a second had passed
+je returnfromEndingCreation		;if no then dont do anything (generation will stay stoped)
+mov PowerUpCollision, 0			;if no, then set collision to 0, to allow new generations after 10 seconds
 returnfromEndingCreation:
 RET
-; Disable:
-;Call DisablePowerUpEffects
-; RET
 PowerUpGeneratorProcedure ENDP
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Procedure that disables power up effects when a new power up spawns, this is equivilant to saying that powerups last a random amount of time
+;and that amount depends on when you pick up the power up
+;the faster you pick it up , the longer it will last
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DisablePowerUpEffects PROC
 cmp GameLevel , 1
-je LVL1PUvalues
+je LVL1PUvalues			;if lvl 1, reset to lvl 1 speeds
 cmp GameLevel , 2
-je LVL2PUvalues
+je LVL2PUvalues			;if lvl 2, reset to lvl 2 speeds
 cmp GameLevel , 3
-je LVL3PUvalues
-
+je LVL3PUvalues			;if lvl 3, reset to lvl 3 speeds
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;	FOR MORE DETAILS CHECK LEVEL SELECTION PROCEDURE
+;	THIS PROCEDURE IS USED INSTEAD OF LEVEL SELECTION BECUASE IN LEVEL SELECTION
+; 	WINNER VARIABLE IS SET TO 0, AMONG OTHER IMPORTANT VALUES LIKE MAX ARMOUR
+; 	AND WINDOW BOUNDS
+;
+;	Fighter velocities are adjusted to disable FREEZE effect
+; 	Bullet speed is adjusted to  disable Speed Effect
+; 	Multishooter set to 0 do disable Multishot effect
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;LEVEL ONE VALUES
 LVL1PUvalues:
 mov Bullet_VELOCITY_X, 4d
 mov Bullet_VELOCITY_X2, 4d
@@ -397,6 +426,8 @@ mov PADDLE_VELOCITY, 8d
 mov PADDLE_VELOCITY2, 8d
 mov MultiShooter , 0
 RET
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;LEVEL TWO VALUES
 LVL2PUvalues:
 mov Bullet_VELOCITY_X, 6d
 mov Bullet_VELOCITY_X2, 6d
@@ -404,57 +435,61 @@ mov PADDLE_VELOCITY, 8d
 mov PADDLE_VELOCITY2, 8d
 mov MultiShooter , 0
 RET
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;LEVEL THREE VALUES
 LVL3PUvalues:
-mov Bullet_VELOCITY_X, 6d
-mov Bullet_VELOCITY_X2, 6d
+mov Bullet_VELOCITY_X, 8d
+mov Bullet_VELOCITY_X2, 8d
 mov PADDLE_VELOCITY, 8d
 mov PADDLE_VELOCITY2, 8d
 mov MultiShooter , 0
 RET
 DisablePowerUpEffects ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;APPLY EFFECT OF POWERUPS PROCEDURE FOR FIRST PLAYER
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 USEPOWERUP1 PROC
-cmp ActivePower,4
+cmp ActivePower,4		;IF 4, THEN APPLY EXTRA LIFE
 je INCREMETHealth
-cmp ActivePower,3
+cmp ActivePower,3		;IF 3, THEN APPLY EXTRA ARMOUR
 je INCREMETHArmour
-cmp ActivePower,2
+cmp ActivePower,2		;IF 2, THEN APPLY EXTRA SPEED
 je INCREMETSpeed
-cmp ActivePower,1
+cmp ActivePower,1		;IF 1, THEN APPLY PLAYER 2 FREEZE
 je Freeze1
-cmp ActivePower,0
-je MultiShot1
-cmp ActivePower,5
+cmp ActivePower,0		;IF 0, THEN APPLY PLAYER 1 MULTISHOT
+je MultiShot1			
+cmp ActivePower,5		;IF 5, THEN APPLY PLAYER 2 METEORITE ATTACK
 je Meteorite
 RET
-INCREMETHealth:
-inc Player1Health
+INCREMETHealth:			;;extra life effect: increment player life
+inc Player1Health		
+RET		
+INCREMETHArmour:		;;Extra armour effect, only increment if max armour not reached
+inc Player1Armour		;increment
+mov al,Player1Armour	
+cmp al , MaxArmour		;check if it surpassed max armour (al used to avoid memmory to memmory adressing)
+ja DontIncArmour		;if not then return
+RET
+DontIncArmour:			;if yes then decrement armour back to max
+Dec Player1Armour		;then return
 RET	
-INCREMETHArmour:
-inc Player1Armour
-mov al,Player1Armour
-cmp al , MaxArmour
-ja DontIncArmour
+INCREMETSpeed:			;Extra speed effect, add 4 to bullet speed 
+add Bullet_VELOCITY_X , 4d	
 RET
-DontIncArmour:
-Dec Player1Armour
-RET
-INCREMETSpeed:
-add Bullet_VELOCITY_X , 4d
-RET
-Freeze1:
+Freeze1:				;Freeze player 2 effect, make second fighter speed = 0 
 Mov PADDLE_VELOCITY2, 0d
 RET
-MultiShot1:
+MultiShot1:				;Multishot effect, set multishooter to be player (effect applies in game mode procedure loop)
 mov MultiShooter, 1d
 RET
-Meteorite:
+Meteorite:				;Meteorite effect, set player 2 armour to 0, regardless of its current value 
 mov Player2Armour,48d
 RET
 USEPOWERUP1 ENDP
-
+;
+;	SAME AS ABOVE BUT APPLIED TO BENIFIT PLAYER 2 INSTEAD OF ONE 
+;
 USEPOWERUP2 PROC
 cmp ActivePower,4
 je INCREMETHealth2
@@ -490,150 +525,158 @@ mov MultiShooter, 2d
 RET
 Meteorite2:
 mov Player1Armour,48d
-RET
-
-
 RET	
 USEPOWERUP2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;pROCEDURE THAT ERASES POWERUP (DRAWS BLACK IN ITS LOCATION)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ENDPOWERUPLIFESPAN PROC
 
-	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
-    MOV DX, 72d  
-	MOV BH,00h   			;set the page number
+	mov cx, 157d	 	;set the X axis location of picture 
+    MOV DX, 72d  		;set the Y axis location of picture 
+	MOV BH,00h   		;set the page number
 	ErasionOfPowerUp:	
     MOV AH,0Ch   	;set the configuration to writing a pixel
-    mov al, 00h   ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+    mov al, 00h   	; color to BLACK
 	INT 10h      	;draw a pixel
 	inc Cx       	; used to loop in x direction
-    mov ax , 164d		
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    mov ax , 164d	;check if cx reached 164 (8 pixels, erases an extra collumn)	
+    cmp cx, ax		;if not, repeat untill cx reaches 164
     Jb ErasionOfPowerUp     	; in other words, check if we can draw more in x direction, otherwise continue to y direction
-	mov Cx, 157d
+	mov Cx, 157d				;reset cx to original x axis 
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
-	mov ax,78d   	;  loop in y direction
+	mov ax,78d   				; loop in y direction
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitErasionOfPowerUp  				;  both x and y reached 0,0 so exit to draw the other fighter
-	Jmp ErasionOfPowerUp			;repeat
+	ja  ExitErasionOfPowerUp  	; only exit when image is erased complelely 
+	Jmp ErasionOfPowerUp		;repeat if not erased
 ExitErasionOfPowerUp:
 RET
 ENDPOWERUPLIFESPAN ENDP
-;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Procedure that draws the power up, same as the above procedure but draws from image pixel colour variables instead of black 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 CreatePowerUp PROC NEAR
-cmp PowerUpCreateCheck,5d
+cmp PowerUpCreateCheck,5d		;if 5, draw meteorite
 je CreateMeteorite
-cmp PowerUpCreateCheck,4d
-je CreateHealth
-cmp PowerUpCreateCheck,3d
-je CreatArmour
-cmp PowerUpCreateCheck,2d
+cmp PowerUpCreateCheck,4d		;if 4, draw health
+je CreateHealth					
+cmp PowerUpCreateCheck,3d		;if 3 draw armour
+je CreatArmour					
+cmp PowerUpCreateCheck,2d		;if 2 draw speed
 je CreateSpeed
-cmp PowerUpCreateCheck,1d
+cmp PowerUpCreateCheck,1d		;if 1 draw freeze
 je CreateFreeze
-cmp PowerUpCreateCheck,0d
+cmp PowerUpCreateCheck,0d		;if 0 draw multishot
 je CreateMultiShot
 
 CreateHealth:
-CALL DrawLifePowerUPProcedure
+CALL DrawLifePowerUPProcedure	;draw procedure explained below
 RET
 CreatArmour:
-CALL DrawArmourPowerUPProcedure
+CALL DrawArmourPowerUPProcedure	;draw procedure explained below
 RET
 CreateSpeed:
-CALL DrawSpeedPowerUPProcedure
+CALL DrawSpeedPowerUPProcedure	;draw procedure explained below
 RET
 CreateFreeze:
-CALL DrawFreezePowerUPProcedure
+CALL DrawFreezePowerUPProcedure	;draw procedure explained below
 RET
 CreateMultiShot:
-Call DrawMultiShotPowerUPProcedure 
+Call DrawMultiShotPowerUPProcedure ;draw procedure explained below
 RET
 CreateMeteorite:
-Call DrawMeteoritePowerUPProcedure 
+Call DrawMeteoritePowerUPProcedure ;draw procedure explained below
 RET
 CreatePowerUp ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;DRAWING PROCEDURES 
+;USES IMAGES STRORED IN DATA SEGMENT TO DRAW POWER UP ICONS IN THE MIDDLE OF THE SCREEN
+;IMAGES ARE 7X7 PIXELS 
+;BELOW ARE 6 DRAWING PROCEDURE FOR THE 6 DIFFERENT POWER UPS AVAILABLE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawLifePowerUPProcedure PROC
-	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
-    MOV DX, 72d  
-	mov DI, offset InverseHeartImg 			 ; to iterate over the pixels
-	dec DI
+	mov cx, 157d	 	;set the X axis of the picture
+    MOV DX, 72d  		;Y axis
+	mov DI, offset InverseHeartImg 	;Offset of heart image, Image is stored in reverse, so we draw in reverse (-ve x -ve = +ve)	 
+	dec DI					; Pointer to the last pixel of the image variable
 	MOV BH,00h   			;set the page number
 	DrawHeartLoopPU:	
     MOV AH,0Ch   	;set the configuration to writing a pixel
-    mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
+    mov al, [DI]    ;color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the last pixel
 	INT 10h      	;draw a pixel
-    Dec DI			;increase di to get the next pixel for the next iteration
+    Dec DI			;decrement di to get the next pixel for the next iteration (moving in reverse)
 	inc Cx       	; used to loop in x direction
     mov ax , 164d		
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
-    Jb DrawHeartLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
-	mov Cx, 157d
-	inc DX   					;y direction increased (goes down one row) and get ready to draw
-	mov ax,78d   	;  loop in y direction
-	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitHeartPU   				;  both x and y reached 0,0 so exit to draw the other fighter
-	Jmp DrawHeartLoopPU			;repeat
+    cmp cx, ax			;164 < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    Jb DrawHeartLoopPU     ; in other words, check if we can draw more in x direction, otherwise continue to y direction
+	mov Cx, 157d		;reset cx with original x axis value
+	inc DX   			;y direction increased (goes down one row) and get ready to draw
+	mov ax,78d   		; loop in y direction
+	cmp dx,ax 			; if not repeat for the next row
+	ja  ExitHeartPU   	;  both x and y reached 7 pixels so exit 
+	Jmp DrawHeartLoopPU	;if not then, repeat
 ExitHeartPU:
-
 RET
 DrawLifePowerUPProcedure ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;same as above but we draw armour
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawArmourPowerUPProcedure PROC
-	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+	mov cx, 157d	 	
     MOV DX, 72d  
-	mov DI, offset InverseArmourImage			 ; to iterate over the pixels
+	mov DI, offset InverseArmourImage	 ; Armour pointer to iterate over the pixels
 	dec DI
 	MOV BH,00h   			;set the page number
 	DrawingArmourLoop:	
     MOV AH,0Ch   	;set the configuration to writing a pixel
     mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
 	INT 10h      	;draw a pixel
-    Dec DI			;increase di to get the next pixel for the next iteration
+    Dec DI			;dec di to get the next pixel for the next iteration
 	inc Cx       	; used to loop in x direction
     mov ax , 164d		
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					;164 < cx  , if yes repeat, if cx is equal to them, proceed to next row
     Jb DrawingArmourLoop      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 157d
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
-	mov ax,78d   	;  loop in y direction
+	mov ax,78d   				;  loop in y direction
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitArmourtPU   				;  both x and y reached 0,0 so exit to draw the other fighter
-	Jmp DrawingArmourLoop			;repeat
+	ja  ExitArmourtPU   	
+	Jmp DrawingArmourLoop		;repeat
 ExitArmourtPU:
 RET
 DrawArmourPowerUPProcedure ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;same but for speed image
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawSpeedPowerUPProcedure PROC
-	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+	mov cx, 157d	 	
     MOV DX, 72d  
-	mov DI, offset InverseSpeedImage			 ; to iterate over the pixels
+	mov DI, offset InverseSpeedImage		 ; to iterate over the pixels
 	dec DI
 	MOV BH,00h   			;set the page number
 	DrawSpeedLoopPU:	
     MOV AH,0Ch   	;set the configuration to writing a pixel
     mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
 	INT 10h      	;draw a pixel
-    Dec DI			;increase di to get the next pixel for the next iteration
+    Dec DI			;dec di to get the next pixel for the next iteration
 	inc Cx       	; used to loop in x direction
     mov ax , 164d		
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					;164h < cx  , if yes repeat, if cx is equal to them, proceed to next row
     Jb DrawSpeedLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 157d
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
-	mov ax,78d   	;  loop in y direction
+	mov ax,78d   				;  loop in y direction
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitSpeedPU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitSpeedPU   		
 	Jmp DrawSpeedLoopPU			;repeat
 ExitSpeedPU:
-
 RET
 DrawSpeedPowerUPProcedure ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;same but for freeze
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawFreezePowerUPProcedure PROC
-	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+	mov cx, 157d	 	
     MOV DX, 72d  
 	mov DI, offset InverseFreezeImage			 ; to iterate over the pixels
 	dec DI
@@ -642,24 +685,25 @@ DrawFreezePowerUPProcedure PROC
     MOV AH,0Ch   	;set the configuration to writing a pixel
     mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
 	INT 10h      	;draw a pixel
-    Dec DI			;increase di to get the next pixel for the next iteration
+    Dec DI			;dec di to get the next pixel for the next iteration
 	inc Cx       	; used to loop in x direction
     mov ax , 164d		
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					;164 < cx  , if yes repeat, if cx is equal to them, proceed to next row
     Jb DrawFreezeLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 157d
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
 	mov ax,78d   	;  loop in y direction
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitFreezePU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitFreezePU   				
 	Jmp DrawFreezeLoopPU			;repeat
 ExitFreezePU:
-
 RET
 DrawFreezePowerUPProcedure ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;same but draw multishot
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawMultiShotPowerUPProcedure PROC
-	mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+	mov cx, 157d	 	
     MOV DX, 72d  
 	mov DI, offset InverseMultiShotImage			 ; to iterate over the pixels
 	dec DI
@@ -668,24 +712,25 @@ DrawMultiShotPowerUPProcedure PROC
     MOV AH,0Ch   	;set the configuration to writing a pixel
     mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
 	INT 10h      	;draw a pixel
-    Dec DI			;increase di to get the next pixel for the next iteration
+    Dec DI			;dec di to get the next pixel for the next iteration
 	inc Cx       	; used to loop in x direction
     mov ax , 164d		
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					;164 < cx  , if yes repeat, if cx is equal to them, proceed to next row
     Jb DrawMultiShotLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 157d
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
 	mov ax,78d   	;  loop in y direction
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitMultiShotPU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitMultiShotPU   				
 	Jmp DrawMultiShotLoopPU			;repeat
 ExitMultiShotPU:
-
 RET
 DrawMultiShotPowerUPProcedure ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;same but draw meteorite
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawMeteoritePowerUPProcedure PROC
-mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image resolution)
+mov cx, 157d	 	
     MOV DX, 72d  
 	mov DI, offset InverseMeteorImage			 ; to iterate over the pixels
 	dec DI
@@ -694,40 +739,40 @@ mov cx, 157d	 	;set the width of picture or pixel count(X)  (based on image reso
     MOV AH,0Ch   	;set the configuration to writing a pixel
     mov al, [DI]     ; color of the current coordinates RETRIEVED FROM IMAGE PIXELS, DI has the location of the first pixel
 	INT 10h      	;draw a pixel
-    Dec DI			;increase di to get the next pixel for the next iteration
+    Dec DI			;dec di to get the next pixel for the next iteration
 	inc Cx       	; used to loop in x direction
     mov ax , 164d		
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					;164 < cx  , if yes repeat, if cx is equal to them, proceed to next row
     Jb DrawMetoriteLoopPU      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 157d
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
 	mov ax,78d   	;  loop in y direction
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitMeteoritePU   				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitMeteoritePU   			
 	Jmp DrawMetoriteLoopPU			;repeat
 ExitMeteoritePU:
-
 RET	
 DrawMeteoritePowerUPProcedure ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;status bar updater
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-StatusBar proc NEAR 	  ;Procedure Resposible for updating status bar/////PHASE 3> Should also have text mode 
+StatusBar proc NEAR 	  ;Procedure Resposible for updating status bar/////PHASE 3> Should also have chat procedue
 ;GETTING READY TO DRAW A PURPLE LINE BEFORE STATUS AREA OF THE SCREEN
-mov cx,120d				;set x axis location to 0  
+mov cx,120d				;set x axis location to 120 (after player 1 15 chs name) 
  mov dx,WINDOW_HEIGHT	;set y axis location to Window Height variable
  mov al,5d				;pixel colour
  mov ah,0ch				;Draw Pixel config
  Status:					;loop used to draw the line
  int 10h					;draw a pixel
  inc cx					;inc x axis position
- cmp cx,200d		;check if it reached the end >> 320 pixels or window width
+ cmp cx,200d		;check if it reached the end >> 200 pixels(leaving space for player 2 name)
  jnz Status				;if not, repeat to drow a horizontal line of length = window length
 
 
-	;draw left
-	MOV CX, 5d 	;set the width of picture or pixel count(X)  (based on image resolution)
+	;draw left heart under player 1
+	MOV CX, 5d 	 ;set x axis
     MOV DX, WINDOW_HEIGHT 
-	add DX, 10d		;set the hieght (Y) 
+	add DX, 10d		;set y axis
 	mov DI, offset InverseHeartImg 			 ; to iterate over the pixels
 	dec DI
 	   
@@ -740,14 +785,14 @@ mov cx,120d				;set x axis location to 0
     Dec DI			;increase di to get the next pixel for the next iteration
 	inc Cx       	; used to loop in x direction
     mov ax , 12			
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					
     Jb DrawHeartLoop      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 5d		;reset cx to draw a new line of pixels in the new row below the row before
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
 	mov ax,WINDOW_HEIGHT   	;  loop in y direction
 	add ax,17d					;until y location + height is smaller than dx, only then exit the loop
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitHeart1   				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitHeart1   			
 	Jmp DrawHeartLoop			;repeat
 
 	ExitHeart1:
@@ -765,22 +810,6 @@ mov cx,120d				;set x axis location to 0
  mov bp, offset Player1Health	; bp = player 1 health msg ofsset, es and bp used to prng strings
  mov ah, 13h				;inturupt 13h/10h
  int 10h					;perform inturupt
-;;draw health for right player using 13h/10h int
-;; SAME STEPS AS ABOVE BUT DRAW HEALTH value under healt string in green aswell
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; mov al, 1
-; mov bh, 0
-; mov bl,  00000010b
-; mov cx, 1 ; calculate message size. 
-; mov dx, WINDOW_HEIGHT
-; mov dh, dl
-; mov dl,2
-; push DS
-; pop es
-; mov bp, offset Player1Health
-; mov ah, 13h
-; int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SAME STEPS AS ABOVE BUT DRAW HEALTH shape under second player
@@ -801,7 +830,7 @@ mov cx,120d				;set x axis location to 0
 	inc Cx       	; used to loop in x direction
     mov ax , WINDOW_WIDTH
 	sub ax , 5d			
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					;  , if yes repeat, if cx is equal to them, proceed to next row
     Jb DrawHeartLoop2      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, WINDOW_WIDTH
 	sub cx, 12d		;reset cx to draw a new line of pixels in the new row below the row before
@@ -809,7 +838,7 @@ mov cx,120d				;set x axis location to 0
 	mov ax,WINDOW_HEIGHT   	;  loop in y direction
 	add ax,17d					;until y location + height is smaller than dx, only then exit the loop
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitHeart2   				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitHeart2   		
 	Jmp DrawHeartLoop2			;repeat
 
 	ExitHeart2:
@@ -832,7 +861,7 @@ mov ah, 13h
 int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SAME STEPS AS ABOVE BUT DRAW Armour string under first player
+;; SAME STEPS AS ABOVE BUT DRAW Armour image under first player
 ; ;draw left
 	MOV CX, 5d 	;set the width of picture or pixel count(X)  (based on image resolution)
     MOV DX, WINDOW_HEIGHT 
@@ -849,14 +878,14 @@ int 10h
     Dec DI			;increase di to get the next pixel for the next iteration
 	inc Cx       	; used to loop in x direction
     mov ax , 12			
-    cmp cx, ax					;left fighter location + fighter width < cx  , if yes repeat, if cx is equal to them, proceed to next row
+    cmp cx, ax					; , if yes repeat, if cx is equal to them, proceed to next row
     Jb DrawArmourLoop      	; in other words, check if we can draw more in x direction, otherwise continue to y direction
 	mov Cx, 5d		;reset cx to draw a new line of pixels in the new row below the row before
 	inc DX   					;y direction increased (goes down one row) and get ready to draw
 	mov ax,WINDOW_HEIGHT   	;  loop in y direction
 	add ax,41d					;until y location + height is smaller than dx, only then exit the loop
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitArmour1  				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitArmour1  		
 	Jmp DrawArmourLoop			;repeat
 
 	ExitArmour1:
@@ -879,8 +908,7 @@ mov ah, 13h
 int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SAME STEPS AS ABOVE BUT DRAW Armour string under second player
-;printing armour left
+;; SAME STEPS AS ABOVE BUT DRAW Armour image under second player
 	mov cx , WINDOW_WIDTH
 	sub cx, 12d	 	;set the width of picture or pixel count(X)  (based on image resolution)
     MOV DX, WINDOW_HEIGHT 
@@ -906,13 +934,13 @@ int 10h
 	mov ax,WINDOW_HEIGHT   	;  loop in y direction
 	add ax,41d					;until y location + height is smaller than dx, only then exit the loop
 	cmp dx,ax 					; if not repeat for the next row
-	ja  ExitArmour2  				;  both x and y reached 0,0 so exit to draw the other fighter
+	ja  ExitArmour2  			
 	Jmp DrawArmourLoop2			;repeat
 
 	ExitArmour2:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SAME STEPS AS ABOVE BUT DRAW Armour value under string under first player
+;; SAME STEPS AS ABOVE BUT DRAW Armour value besides armour image under second player
 ;;draw p2 Armour
 mov al, 1
 mov bh, 0
@@ -929,6 +957,7 @@ mov ah, 13h
 int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;SAME AS ABOVE BUT PRINT 'BACK - F4'
 mov al, 1
 mov bh, 0
 mov bl,  00000110b
@@ -944,6 +973,7 @@ mov ah, 13h
 int 10h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;SAME AS ABOVE BUT PRINT PLAYER 1 NAME ON THE LEFT
 mov al, 1
 mov bh, 0
 mov bl,  00000110b
@@ -957,7 +987,7 @@ pop es
 mov bp, offset PlayerName
 mov ah, 13h
 int 10h
-
+;SAME AS ABOVE BUT PRINT PLAYER 2 NAME ON THE RIGHT (PRINTS PLAYER 1 NAME FOR NOW, CHANGE IN PHASE 3 AS YOU GET PLAYER 2 NAME FROM CHAT MODULE)
 mov al, 1
 mov bh, 0
 mov bl,  00000110b
@@ -978,6 +1008,8 @@ StatusBar ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;CHOOSE LEVEL PROCEDURE
+;PROMPTS THE USER TO CHOOSE A LEVEL (PRINTS STUFF ON SCREEN AND TAKES INPUT)
+;LEVEL DISCRIPTION AND MODIFIERS IS BELLOW THIS PROCEDURE IN THE LEVEL1,2,3 PROCEDURES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -986,14 +1018,16 @@ StatusBar ENDP
 
 ;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
 	;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;SET RIGHT AND LEFT PADDLES TO A FIXED STARTING POSITION IN AL LEVELS
 	MOV AX,WINDOW_HEIGHT
 	SUB AX,WINDOW_BOUNDS
 	SUB AX,PADDLE_HEIGHT
-	mov PADDLE_RIGHT_Y, ax
+	mov PADDLE_RIGHT_Y, ax		
 	Call RESET_Bullet_POSITION
 	Call RESET_Bullet_POSITION2
 	mov PADDLE_LEFT_X, 0
-	mov PADDLE_LEFT_Y, 0AH
+	mov PADDLE_LEFT_Y, 0AH  	 
 	mov OldPaddleLeftX, 0
 	mov OldPaddleLeftY, 0AH
 
@@ -1001,12 +1035,11 @@ StatusBar ENDP
 	mov PADDLE_RIGHT_Y, 90D
 	mov OldPaddleRightX, 280d
 	mov OldPaddleRightY, 100D
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
 ;;;;DO NOT REMOVE THIS LINE, THIS FIXES A BUG, ASK ZAKA FOR MORE INFO;;;;;
-
-	
-
-    ;clear screen, blue pen grey background
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;clear screen, PURPLE pen BLACK background
     MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
     MOV BH,00001101b				;Colour atributes
     MOV CX,0000H			;cursor
@@ -1015,14 +1048,14 @@ StatusBar ENDP
     ;set cursor	location to middle of screen
     MOV AH,02H				;move curs to x and y pos (02h/10h)
     MOV BH,00				;set page number
-    MOV DX,0810H   			; X axis = 17, Y = 8
+    MOV DX,0810H   			; X axis = 10, Y = 8
     INT 10H    				;procede
 
     ;print msg
     mov dx, Offset ChooseGameLvl 	;get message (ask player to choose lvl)
 	mov     ah, 09h					;print until dollar sign $
 	int     21h						;procede
-   
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;REFER TO STATUS BAR STRING PRINTING
 	mov al ,1
 	mov bh, 0
@@ -1035,7 +1068,8 @@ StatusBar ENDP
 	mov bp, offset lvl1
 	mov ah, 13h
 	int 10h
-    
+     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;REFER TO STATUS BAR STRING PRINTING
 	mov al ,1
 	mov bh, 0
 	mov bl,  00001110b
@@ -1047,8 +1081,8 @@ StatusBar ENDP
 	mov bp, offset lvl2
 	mov ah, 13h
 	int 10h
-   
-
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;REFER TO STATUS BAR STRING PRINTING
 	mov al ,1
 	mov bh, 0
 	mov bl,  00001100b
@@ -1060,9 +1094,7 @@ StatusBar ENDP
 	mov bp, offset lvl3
 	mov ah, 13h
 	int 10h
-
-
-
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;Hide Cursor
 	;looks good
 	;thats all
@@ -1072,10 +1104,10 @@ StatusBar ENDP
 	;xD 
     MOV AH,02H
     MOV BH,00
-    MOV DX,3A17H ; X axis = 17, Y = 0A
+    MOV DX,3A17H ; X axis = 17, Y = 3A (not in this page)
     INT 10H   
 	;; yay cursor hidden 
-
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;;Loop to check for user input
     GetLevel:
     mov ah,0		;Wait for input
@@ -1100,11 +1132,11 @@ StatusBar ENDP
 ;Procedure used to set up game level and enable level specefic mechanisms
 ;LEVELS AVAILABLE 
 ;LEVEL ONE :
-;				Health = 4, MAX Armour = 2, Bullet Speed = LOW (NOT YET), 	 , ENABLE ARMOUR (other modifiers experimental) (NOT YET)
+;				MAX Health = 4, MAX Armour = 4, Bullet Speed = LOW, 	 , ENABLE ARMOUR , DISABLE METEORITE
 ;LEVEL TWO:
-;				Health = 3, Max Armour = 1, Bullet Speed = Medium (NOT YET) , ENABLE ARMOUR (other mods exp) (NOT YET)
+;				MAX Health = 3, Max Armour = 2, Bullet Speed = Medium	 , ENABLE METEORITE, LOWER ARMOUR CHANCE
 ;LEVEL THREE:
-;				Health = 2, NO ARMOUR,		Bullet Speed = Fast (NOT YET)  ,	  DISABLE ARMOUR (other mods exp) (NOT YET)	
+;				MAX Health = 2, Max ARMOUR = 1,	Bullet Speed = Fast  	 ,DISABLE LIFE , HIGHER METEORITE CHANCE , FASTER RELOAD SPEED, SMALLER WINDOW BOUNDS
 ;MIGHT USE THIS TO RESET PLAYER POSITIONS AND CHANGABLE VALUES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1114,16 +1146,18 @@ mov Player1Health,52d	;set p1 health to 4 (ascii used for printing, 48d ascii = 
 mov Player2Health,52d	;same for p2
 mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
-mov Bullet_VELOCITY_X , 6d;
-mov Bullet_VELOCITY_X2 , 6d;
+mov Bullet_VELOCITY_X , 6d;SET BULLET SPEED TO LOW	
+mov Bullet_VELOCITY_X2 , 6d;SET BULLET SPEED TO LOW
+;POWER UP RESETS FOR NEW GAME
 CALL RESET_Bullet_POSITION_Multi
 Mov IsMultiShotShot , 0
 mov MultiShooter , 0
 mov ActivePower , 0
 mov PowerUpCreateCheck , 0
-mov WINDOW_BOUNDS , 6d
-mov MaxArmour , 4d
-ADD MaxArmour , 48d
+
+mov WINDOW_BOUNDS , 6d 	;NORMAL WINDOW BOUNDS
+mov MaxArmour , 4d		;MAX ARMOUR = 4
+ADD MaxArmour , 48d		;ASCII FORM
 
 ;; Reset game mode ???
 RET
@@ -1135,16 +1169,18 @@ mov Player1Health,51d	;set p1 health to 4 (ascii used for printing, 48d ascii = 
 mov Player2Health,51d	;same for p2
 mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
-mov Bullet_VELOCITY_X , 8d;
-mov Bullet_VELOCITY_X2 , 8d;
+mov Bullet_VELOCITY_X , 8d;SET BULLET SPEED TO MID
+mov Bullet_VELOCITY_X2 , 8d;SET BULLET SPEED TO MID
+;POWER UP RESETS FOR NEW GAME
 CALL RESET_Bullet_POSITION_Multi
 Mov IsMultiShotShot , 0
 mov MultiShooter , 0
 mov ActivePower , 0
 mov PowerUpCreateCheck , 0
-mov WINDOW_BOUNDS , 6d
-mov MaxArmour , 2d
-ADD MaxArmour , 48d
+
+mov WINDOW_BOUNDS , 6d	;NORMAL WINDOW BOUNDS
+mov MaxArmour , 2d		;MAX ARMOUR = 2
+ADD MaxArmour , 48d		;ASCII FORM
 RET
 LevelTwo ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1154,16 +1190,18 @@ mov Player1Health,50d	;set p1 health to 4 (ascii used for printing, 48d ascii = 
 mov Player2Health,50d	;same for p2
 mov Player1Armour, 48d	;set armour to 0 for p1
 mov Player2Armour, 48d	;same for p2
-mov Bullet_VELOCITY_X , 10d;
-mov Bullet_VELOCITY_X2 , 10d;
+mov Bullet_VELOCITY_X , 10d;SET BULLET SPEED TO HIGH
+mov Bullet_VELOCITY_X2 , 10d;SET BULLET SPEED TO HIGH
+;POWER UP RESETS FOR NEW GAME
 CALL RESET_Bullet_POSITION_Multi
 Mov IsMultiShotShot , 0
 mov MultiShooter , 0
 mov ActivePower , 0
 mov PowerUpCreateCheck , 0
-mov WINDOW_BOUNDS , 16d
-mov MaxArmour , 1d
-ADD MaxArmour , 48d
+
+mov WINDOW_BOUNDS , 16d	;SMALLER WINDOW BOUNDS (FASTER RELOAD)
+mov MaxArmour , 1d		;MAX ARMOUR = 1
+ADD MaxArmour , 48d		;ASCII FORM
 RET
 LevelThree ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1187,28 +1225,28 @@ LevelThree ENDP
 		JZ CHECK_RIGHT_PADDLE_MOVEMENTJMPER
         MOV AH,00h  ;get key from buffer
 		INT 16h 	;00ah/16h
-		CMP     Ah, 3Eh							;check for space bar
+		CMP     Ah, 3Eh							;check for F4 bar, IF YES EXIT GAME MODE
 		JE      F4
-		CMP     AL, 32d 							;check for space bar
-		JNE      checkP2
-		cmp IsShot1 , 0
-		JNE Reload1 
-		CALL RESET_Bullet_POSITION
+		CMP     AL, 32d 						;check for space bar, I YES SHOOT PEW PEW
+		JNE      checkP2	
+		cmp IsShot1 , 0			;IF SPACE BAR IS PRESSED, CHECK IF A BULLET IS ALREADY SHOT BEFORE
+		JNE Reload1 			;IF NO, UPDATE BULLET POSITION TO SPACE SHIP POSITION
+		CALL RESET_Bullet_POSITION	
 		Reload1:							
-		mov IsShot1 , 1d
-		cmp MultiShooter,1d
-		jne checkP2
-		mov IsMultiShotShot, 1d
-		
-		jmp checkP2
+		mov IsShot1 , 1d		;IF YES, KEEP IS SHOT ENABLED
+		cmp MultiShooter,1d		;CHECK IF MULTISHOT IS ACTIVE FOR PLAYER 1
+		jne checkP2				;IF NO, GO CHECK ON SECOND PLAYER
+		mov IsMultiShotShot, 1d	;IF YES,  THEN SHOOT MULTISHOT FOR PLAYER 1
+		jmp checkP2				;AND MOVE TO PLAYER 2 CHECKS
 		F4:
-		mov winner, 1
+		mov winner, 1			;IF F4 PRESSED, RETURN TO MAIN MENUE
 		RET
-		checkP2:
+		checkP2:				;PLAYER 2 CHECKS
 		CMP     AL, 47d 							;check for /
-		JNE      paddlemovement 
-
-		cmp IsShot2 , 0
+		JNE      paddlemovement 	;IF NO SHOT, CHECK FOR MOVEMENT OF BOTH FIGHTERS NOW
+		
+		;SAME AS ABOVE BUT FOR PLAYER 2
+		cmp IsShot2 , 0				
 		JNE Reload2 
 		CALL RESET_Bullet_POSITION2
 		Reload2:
@@ -1216,38 +1254,28 @@ LevelThree ENDP
 		cmp MultiShooter,2d
 		jne paddlemovement
 		mov IsMultiShotShot, 1d
-		jmp paddlemovement
+		jmp paddlemovement ;JUMP TO PADDLE MOVEMENT CHECKS
 
-		CHECK_RIGHT_PADDLE_MOVEMENTJMPER:
+		CHECK_RIGHT_PADDLE_MOVEMENTJMPER:	;USED TO AVOID JUMP OUT OF BOUNDS ERROR
 		jmp CHECK_RIGHT_PADDLE_MOVEMENT
 
 
 		paddlemovement:
 		;check if any key is being pressed and check if it is the move key(if not check the other player)
-		; MOV AH,01h	;get key pressed BUT DO NOT WAIT FOR A KEY
-		; INT 16h		;inturupt 01ah/16h
-		; JZ CHECK_RIGHT_PADDLE_MOVEMENT 	;ZF=1, JZ -> Jump if zero to check other fighter, means no input
-		; ; if it reaches here, there was in fact an input
 		; ;check which key is being pressed (AL = ASCII Character)
-
-		; ;; TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-		; ;; TODO : Check for f4 instead of esc, and if so initiate end game sequence 
 		; ;get the key that was pressed and act accordingly
-		; MOV AH,00h  ;get key from buffer
-		; INT 16h 	;00ah/16h
-		; CMP     AL, 1Bh 							;check for 'Esc' 
-		; JZ      exit 								;Jump to exit if 'Esc' is pressed
-
 		;if it is up arrow  -> move up for left player
 		CMP ah,48h 									;check for up arrow
 		JE MOVE_LEFT_PADDLE_UP						;if true move up
 
 		;if it is down arrow -> move down
-		CMP ah,50h 									;check for 's'
-		JE MOVE_LEFT_PADDLE_DOWN					;if true move up
+		CMP ah,50h 									;check for DOWN ARROW
+		JE MOVE_LEFT_PADDLE_DOWN					;if true move DOWN
 		
-		JMP CHECK_RIGHT_PADDLE_MOVEMENT				;DO THE SAME FOR RIGHT PLAYER BUT WITH O AND L INSTEAD OF W AND S
+		JMP CHECK_RIGHT_PADDLE_MOVEMENT				;DO THE SAME FOR RIGHT PLAYER 2 BUT WITH O AND L INSTEAD OF UP AND DOWN
+														;CHANGE FOR PHASE 3
 
+		;LEFT FIGHTER MOVEMENT SEQUENCE												
 		MOVE_LEFT_PADDLE_UP: 						;Sequence to move the left paddle up
 			MOV AX,PADDLE_VELOCITY 					;Velocity Control to change fighter speed
 			SUB PADDLE_LEFT_Y,AX 					;subtracting the PADDLE_VELOCITY in current position of the paddle
@@ -1280,6 +1308,7 @@ LevelThree ENDP
 
 		;Right fighter movement
 		;SAME AS ABOVE, SELF EXPLANETORY
+		;CHANGE FOR PHASE 3
 		CHECK_RIGHT_PADDLE_MOVEMENT:
 			;if it is 'o' or 'O' -> move up
 			CMP AL,6Fh 								;check for 'o'
@@ -1375,7 +1404,7 @@ LevelThree ENDP
 			mov cx, OldPaddleRightX		;get old x coordinates
 			mov dx, OldPaddleRightY		;get old y coordinates
 
-			
+			;SAME AS ABOVE BUT FOR RIGHT FIGHTER
 			DRAW_PADDLE_Right_HORIZONTAL:
 			MOV AH,0Ch					;set the configuration to writing the pixel
 			MOV AL,00h					;choose black as color of the pixel (can be any color, make sure it is the background colour, a variable can be used)
@@ -1394,20 +1423,19 @@ LevelThree ENDP
 			cmp dx,ax
 			JNG DRAW_PADDLE_Right_HORIZONTAL
 
-		NoOldMovement2:      			; if there was no old movement for char 2 then exit procedure
-
+		NoOldMovement2:      			; if there was no old movement for PLAYER 2 then exit procedure
     RET
     Move_Fighters ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;Procedure Used to Draw Fighters From PreCalculated Image Saved in Memory At>> FighterImage 
+;Procedure Used to Draw Fighters From PreCalculated Image Saved in DATE SEGMENT At FighterImage 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DrawFighters proc NEAR		;draw fighter procedure
     
 		;draw left
-		MOV CX, PADDLE_LEFT_X   	;set the width of picture or pixel count(X)  (based on image resolution)
-	    MOV DX, PADDLE_LEFT_Y  		;set the hieght (Y) 
+		MOV CX, PADDLE_LEFT_X   	;set X AXIS START LOCATION
+	    MOV DX, PADDLE_LEFT_Y  		;set the Y AXIS START LOCATION 
 		mov DI, offset FighterImage 			 ; to iterate over the pixels
 		   
 		    MOV BH,00h   			;set the page number
@@ -1427,7 +1455,7 @@ LevelThree ENDP
 		   mov ax,	 PADDLE_LEFT_Y   	;  loop in y direction
 		   add ax,39					;until y location + height is smaller than dx, only then exit the loop
 		   cmp dx,ax 					; if not repeat for the next row
-	       ja  ENDING   				;  both x and y reached 0,0 so exit to draw the other fighter
+	       ja  ENDING   				;  both x and y TERMINATED LOOP so exit to draw the other fighter
 		   Jmp DrawFightersLoop			;repeat
 	ENDING:
 		;draw right
@@ -1454,7 +1482,7 @@ LevelThree ENDP
 		   mov ax,	 PADDLE_RIGHT_Y   	
 		   add ax,39
 		   cmp dx,ax 						;similar comparisons to above
-	       ja  ENDING2   	;  both x and y reached 0,0 so end program
+	       ja  ENDING2   	;  both x and y TERMINATED LOOP so end program
 		   Jmp DrawFightersLoop2
 		   ENDING2:
 
@@ -1503,12 +1531,13 @@ LevelThree ENDP
         	mov di, ax							;set di with new location		
         	mov Al,0CH							;light red pixel colour 
         	mov cx,BulletSize 					;loop to write bullet size number of pixels
-        	rep STOSB
-										;repeat store single byte and dec cx untill cx = 0
+        	rep STOSB							;repeat store single byte and dec cx untill cx = 0
+										
 			;DRAWING SECOND PLAYER BULLET
 			;EXACTLY THE SAME AS ABOVE 
 			;VERY VERY IMPORTANT NOTE: 
 			;this drawing method directly affects collision calculations
+			;DETAILS IN MOVE BULLET PROCEDURE
 			SecondBullet:
 			mov ax, WINDOW_WIDTH
 			sub ax, PADDLE_WIDTH
@@ -1538,7 +1567,7 @@ LevelThree ENDP
     DrawBullets ENDP
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;MOVE BULLETS PROCEDURE
+	;MOVE BULLETS 1 AND 2 PROCEDURES
 	;;;
 	;____________________________________________________________________THIS PROCEDURE IS THE MOST IMPORTANT IN THE ENTIRE PROJECT___________________________________________________________;;;;;;;;;;;;;;;;;;;;;;;
 	;;;
@@ -1549,9 +1578,13 @@ LevelThree ENDP
 	;2- CALCULATING New Bullet Location of both Player bullets
 	;3- Check if there was a collision between a bullet and a player
 	;4- if there is indeed a collision decrement player health accordingly 
-	;5- TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO: : : IF both players lose at the same time, initiate the DRAW Protocol (Sounds Fancy (bsot spoiled princess))
+	;
+	;5- TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+	;: : IF both players lose at the same time, initiate the DRAW Protocol (Sounds Fancy (bsot spoiled princess))
+	;
+	;
 	;6- If a bullet Becomes Out of bounds (outside window dimensions, reset its position
-	;7- TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO: :Check collisions with power ups, asign power up to crosponding player, if draw, apply to both or dont apply at at all 
+	;7-:Check collisions with power ups, asign power up to crosponding player
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     MOVE_Bullet PROC NEAR					;process the movemment of the bullet
@@ -1636,8 +1669,7 @@ LevelThree ENDP
 		JG EXIT_BALL_COLLISION		;if there is no collision Check Left Fighter
 
 		;if it reaches this point the ball is colliding with the right paddle For Sure
-		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
-		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
+		; Then we should Decrement Player 2 health or armour and check if player is dead
 		;decrement player armour
 		;check if armour is zero
 		cmp Player2Armour , 48d
@@ -1658,7 +1690,7 @@ LevelThree ENDP
 		ENDGAME1:	;if the winner is player 1
 		;Check If Draw Call Draw protocol if it is (TODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODOTODODODODODODO)
 		mov winner,1	;set winner variable to 1
-		Call GAME_OVER	;Call the THE GAME OVER PROTOCOL (7elmy men wana so8ayar eny akon an el ba2ol game over msh ana el byet2aly, thank you <3 )
+		Call GAME_OVER	;Call the THE GAME OVER PROTOCOL (eh dah? ana el ba2ol game over msh ana el byet2aly? xD, thank you <3 )
 
 		RET
 		EXIT_BALL_COLLISION: ;Check for power Up COllisions
@@ -1669,34 +1701,35 @@ LevelThree ENDP
 		add ax,BulletSize
 		CMP AX	,157d	;compare between the two, if bullet location is greater, then there might be collision
 									;to make sure we check the y location
-									;if however it is in fact lower, then there can't be collision, check for left fighter now 
-		JL NoPowerUp		;if there is no collision then we check for left fighter
+									;if however it is in fact lower, then there can't be collision, check for Right fighter now 
+		JL NoPowerUp		;if there is no collision then we check for Right fighter
 
 		;if it reaches this point then there might be collision with Y axis
 		MOV AX,Bulletp11_Y		;get Y coordinates of bullet
-		CMP AX,71d				;compare it to Y coor of powerup, if it is lower : no collision : Check Left Fighter 
+		CMP AX,71d				;compare it to Y coor of powerup, if it is lower : no collision : Check Right Fighter 
 									;if there is higher there might be collision
-		JL NoPowerUp	;if there is no collision Check Left Fighter
+		JL NoPowerUp	;if there is no collision Check Right Fighter
 
 		;if it reaches this point then there might be collision
 		;now we know it is in the X axis collsion range
-		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
-		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
-		;If Not then No collision, we check for left paddle 
-		CMP Bulletp11_Y,79d		;Check and see if bullet Y is less than Fighter Y + Fighter Height
+		;we also know it is Greater or equal to powerup Y, then to know if there is a collision
+		;we should check and see if the bullet is in the power up Height range, if it is : COLLISION
+		;If Not then No collision, we check for right paddle 
+		CMP Bulletp11_Y,79d		;Check and see if bullet Y is less than powerup Y + powerup Height
 		JG NoPowerUp		;if there is no collision Check Left Fighter
 
-		mov PowerUpCollision , 1d
-		CALL ENDPOWERUPLIFESPAN
-		CALL RESET_Bullet_POSITION
-		CALL USEPOWERUP1
-		mov ActivePower,6d
+		;if it reaches this point, there is collision
+		mov PowerUpCollision , 1d	;stop generating more powerups, if generation process didnt end
+		CALL ENDPOWERUPLIFESPAN		;erase power up
+		CALL RESET_Bullet_POSITION	;reset bulelt position to prepare for next shot
+		CALL USEPOWERUP1			;use power up effect for player 1
+		mov ActivePower,6d			;reset active powerup to prepare for next random generation
 		NoPowerUp:
 	    RET
 	MOVE_Bullet ENDP
 
 
-
+	;EXACTLY THE SAME AS ABOVE WITH MINOR TWEEKS
 	MOVE_Bullet2 PROC NEAR					;process the movemment of the bullet
 
 		;first Erase old bullet
@@ -1736,7 +1769,7 @@ LevelThree ENDP
 		jmp contafterjmp2 ;now we can assume they are within bounds, thus we do the within bounds calculations
 						 ;contafterjmp guarantees that we Dont reset pos if they are in bounds	
 
-		RESET_POSITION2:			;SAME AS FOR BULLET ONE, But after this one, it exits procedure, because if ball is out of bounds
+		RESET_POSITION2:			;SAME AS FOR BULLET ONE, But after this one, it exits procedure, because if BULLET is out of bounds
 										;then it cant hit ships or power ups, thus no need to do any more calculations 
 		Call RESET_Bullet_POSITION2
 		RET							;exit procedure if out of bounds (Will not get called other wise)
@@ -1765,7 +1798,6 @@ LevelThree ENDP
 		JNL EXIT_BALL_COLLISION2	;Exit proc if there is no collision
 
 		;if it reaches this point the ball is colliding with the left paddle For sure
-		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 		;decrement player armour
 		;check if armour is zero
 		cmp Player1Armour,48d
@@ -1808,10 +1840,10 @@ LevelThree ENDP
 
 		;if it reaches this point then there might be collision
 		;now we know it is in the X axis collsion range
-		;we also know it is Greater or equal to Fighter Y, then to know if there is a collision
-		;we should check and see if the bullet is in the fighter Height range, if it is : COLLISION
+		;we also know it is Greater or equal to PU Y, then to know if there is a collision
+		;we should check and see if the bullet is in the PU Height range, if it is : COLLISION
 		;If Not then No collision, we check for left paddle 
-		CMP Bulletp12_Y,79d		;Check and see if bullet Y is less than Fighter Y + Fighter Height
+		CMP Bulletp12_Y,79d		;Check and see if bullet Y is less than PU Y + PU Height
 		JG NoPowerUp2		;if there is no collision Check Left Fighter
 
 		mov PowerUpCollision , 1d
@@ -1823,6 +1855,8 @@ LevelThree ENDP
 	    RET
 	MOVE_Bullet2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;PROCEDURE THAT MOVES MULTISHOT HORIZONTALLY AND VERTICALLY, CHECKS IF IT HAS HIT A PLAYER AND DECREMENT HEALTH AND ARMOUR
+;EXACTLY THE SAME AS MOVEBULLET 1 AND 2, BUT FOR MULTISHOT BULLETS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Procedure for moving multishot bullets
 MoveMultiShot PROC ;;;
@@ -1830,8 +1864,6 @@ MoveMultiShot PROC ;;;
 ;first Erase old bullet
 			mov ax, 0A000h      ;to graphics screen
             mov es, ax  		;Refer to LECTURE 10			
-			;REPEAT FOR PLAYER 2 BULLET
-
 			MOV AX,Bulletp22_Y 					
            	MOV DX,Bulletp12_X					
         	mov cx, WINDOW_WIDTH
@@ -1850,11 +1882,9 @@ MoveMultiShot PROC ;;;
         	mov Al,00H
         	mov cx,BulletSize 
         	rep STOSB
-			;first Erase old bullet
+			;NOW ERASE SECOND BULLET
 			mov ax, 0A000h      ;to graphics screen
             mov es, ax  		;Refer to LECTURE 10			
-			;REPEAT FOR PLAYER 2 BULLET
-
 			MOV AX,Bulletp21_Y 					
            	MOV DX,Bulletp21_X					
         	mov cx, WINDOW_WIDTH
@@ -1874,7 +1904,6 @@ MoveMultiShot PROC ;;;
         	mov cx,BulletSize 
         	rep STOSB
 			;ERASION END
-			;ERASION END
 			; NEXT we move both bullets in thier respective directions
 		MOV AX,MULTISHOT_VELOCITYX1	;add bullet velocity in X direction to its current X coordinate
 		ADD Bulletp21_X,AX 			;move the bullet horizontally (from left to right)
@@ -1885,25 +1914,25 @@ MoveMultiShot PROC ;;;
 		MOV AX,MULTISHOT_VELOCITYY2	;add bullet velocity in X direction to its current X coordinate
 		ADD Bulletp22_Y,AX 			;move the bullet horizontally (from left to right)
 		MOV AX,WINDOW_BOUNDS
-		CMP Bulletp21_Y,AX					;Bulletp21_Y is compared with the top boundaries of the screen	
+		CMP Bulletp21_Y,AX					;Bulletp21_Y is compared with the TOP boundaries of the screen	
 		JL NEG_VELOCITY_Y1				;if its less reverse the velocity in Y
 		jmp CheckUpBound
 		NEG_VELOCITY_Y1:
 		NEG MULTISHOT_VELOCITYY1
 		CheckUpBound:
 		MOV AX,WINDOW_BOUNDS
-		CMP Bulletp22_Y,AX					;Bulletp22_Y is compared with the top boundaries of the screen	
+		CMP Bulletp22_Y,AX					;Bulletp22_Y is compared with the TOP boundaries of the screen	
 		JL NEG_VELOCITY_Y2				;if its less reverse the velocity in Y
 		jmp CheckDownBound
 		NEG_VELOCITY_Y2:
 		NEG MULTISHOT_VELOCITYY2
 		CheckDownBound:
-		;check if it has passed the bottom boundary (BALL_Y > WINDOW_HEIGHT - BALL_SIZE - WINDOW_BOUNDS)
+		;check if it has passed the bottom boundary (BULLETY > WINDOW_HEIGHT - BULLETSIZE - WINDOW_BOUNDS)
 		;if its colliding reverse the velocity in Y
 		MOV AX,WINDOW_HEIGHT
 		SUB AX,BulletSize
 		SUB AX,WINDOW_BOUNDS					
-		CMP Bulletp21_Y,AX					;BALL_Y is compared with the bottom boundaries of the screen
+		CMP Bulletp21_Y,AX					;Bulletp21_Y is compared with the bottom boundaries of the screen
 		JG NEG_VELOCITY_Y12				;if its greater reverse the velocity in Y
 		jmp CheckDownBound2
 		NEG_VELOCITY_Y12:
@@ -1912,7 +1941,7 @@ MoveMultiShot PROC ;;;
 		MOV AX,WINDOW_HEIGHT
 		SUB AX,BulletSize
 		SUB AX,WINDOW_BOUNDS					
-		CMP Bulletp22_Y,AX					;BALL_Y is compared with the bottom boundaries of the screen
+		CMP Bulletp22_Y,AX					;Bulletp22_Y is compared with the bottom boundaries of the screen
 		JG NEG_VELOCITY_Y122				;if its greater reverse the velocity in Y
 		jmp CheckDownBound22
 		NEG_VELOCITY_Y122:
@@ -1933,14 +1962,7 @@ MoveMultiShot PROC ;;;
 						 ;contafterjmp guarantees that we Dont reset pos if they are in bounds
 	
 		RESET_POSITION_M: 
-		Call RESET_Bullet_POSITION_Multi_AFTERSHOT ;Procedure that returns Bullet to Blasters of the ship (weird right? WRONG)
-									;this way a player can have only one active bullet at a time
-									;if players can shoot alot, even with a reload period, they can easily CHEASE the game
-									;CHEASY WINS is when you win using some unfair way, say a bug or a glitch
-									;we dont want that now do we? NOPE WE DONT 
-									;Which is Why my good friend we must limit the player's prowess
-									;especially on dosbox where the screen is alreadt so tiny with such small dimensions 
-									;ma3lesh tawelt 3lek :D 
+		Call RESET_Bullet_POSITION_Multi_AFTERSHOT ;Procedure that returns Bullet to Blasters of the ship WAITING FOR NEW MULTISHOT
 		RET		;Go back to Checking second bullets		
 
 
@@ -1970,10 +1992,7 @@ MoveMultiShot PROC ;;;
 		JG CHECK_COLLISION_WITH_LEFT_PADDLEM		;if there is no collision Check Left Fighter
 
 		;if it reaches this point the ball is colliding with the right paddle For Sure
-		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
-		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-		;decrement player armour
-		;check if armour is zero
+		; Then we should Decrement Player 2 health or armour and check if player is dead
 		cmp Player2Armour , 48d
 		je DecHealthPlayer2M
 		Dec Player2Armour
@@ -2058,10 +2077,7 @@ MoveMultiShot PROC ;;;
 		JG CHECK_COLLISION_WITH_LEFT_PADDLEM2		;if there is no collision Check Left Fighter
 
 		;if it reaches this point the ball is colliding with the right paddle For Sure
-		; Then we should Decrement Player 2 health or armour(NOT YET) and check if player is dead
-		;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-		;decrement player armour
-		;check if armour is zero
+		; Then we should Decrement Player 2 health or armour and check if player is dead
 		cmp Player2Armour , 48d
 		je DecHealthPlayer2M2
 		Dec Player2Armour
@@ -2111,14 +2127,14 @@ MoveMultiShot PROC ;;;
 
 		RET
 MoveMultiShot ENDP
-
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;DRAWING MULTISHOT EVERY FRAME IF IT HAS BEEN SHOT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawMultiShot PROC
             mov ax, 0A000h      ; to graphics region in memory (REFER TO LECTURE 10, tha second part right after jump types, the video ram part) 
             mov es, ax  		;set es to point to video ram first part 
 
-			;DRAWING FIRST PLAYER BULLET
+			;DRAWING FIRST MULTISHOT BULLET
             MOV AX,Bulletp21_Y 					;set the initial line (Y) in ax
            	MOV DX,Bulletp21_X					;set the initial line (X) in dx
         	mov cx, WINDOW_WIDTH				;set cx to 320, window width 
@@ -2137,7 +2153,7 @@ DrawMultiShot PROC
         	mov Al,0CH							;light red pixel colour 
         	mov cx,BulletSize 					;loop to write bullet size number of pixels
         	rep STOSB
-			;DRAWING FIRST PLAYER BULLET
+			;DRAWING SECOND MULTISHOT BULLET
             MOV AX,Bulletp22_Y 					;set the initial line (Y) in ax
            	MOV DX,Bulletp22_X					;set the initial line (X) in dx
         	mov cx, WINDOW_WIDTH				;set cx to 320, window width 
@@ -2153,21 +2169,18 @@ DrawMultiShot PROC
         	add ax,Bulletp22_X					;add column
         	add  ax,WINDOW_WIDTH				;add window width to get the next row 
         	mov di, ax							;set di with new location		
-        	mov Al,0DH							;light red pixel colour 
+        	mov Al,0DH							;light VIOLET pixel colour 
         	mov cx,BulletSize 					;loop to write bullet size number of pixels
         	rep STOSB							;repeat store single byte and dec cx untill cx = 0
             RET
-
-RET
 DrawMultiShot ENDP
-;Player Wins Proc 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Player Wins Proc, gameover	 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL :D
+	CALL StatusBar  ;UPDATE STATUS BAR WITH 0 HEALTH FOR LOSING PLAYER
 
-GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL 
-
-	 CALL StatusBar
-	 ;;draw GAME OVER in middle of screen using 13h/10h int
+	;;draw GAME OVER in middle of screen using 13h/10h int
 	mov al, 1				;Write mode>> 0 to update cursor after writing, 1 to include attributes (Check online)
 	mov bh, 0				;Page Number
 	mov bl,  00001101b		;Attributes :Purple  color on black background 
@@ -2189,7 +2202,7 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	cmp TIME_AUX_SEC , 60
 	JB FIVE_SECONDS
 
-	sub TIME_AUX_SEC, 60
+	sub TIME_AUX_SEC, 60 ; IF SECONDS+5 > 60. SUBTRACT 60, AS IN NEW MINUTE
 	
 	FIVE_SECONDS: 					;a loop for checking the next frame arival
 		MOV AH,2Ch					;get the system time
@@ -2228,7 +2241,7 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 
 	; then user succesfully exits game mode, we now reset game variables in preparation for a new game
 
-	QUICK:	
+	QUICK:	;QUICK CHANGES RESETING FIGHTER MOVEMENT VARIABLES
 	mov PADDLE_LEFT_X, 0
 	mov PADDLE_LEFT_Y, 0AH
 	mov OldPaddleLeftX, 0
@@ -2239,23 +2252,18 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	mov OldPaddleRightX, 280d
 	mov OldPaddleRightY, 100D
 
-	;p1
-	mov Bulletp11_X , 0Ah 			        	;current X position (column) of the first player bullet
-	mov Bulletp11_Y , 30d 			        	;current Y position (line) of the first player bullet
+	;FOR THE FIRST BULLET SHOT, IF PLAYER WERE TO PRESS SPACE BAR THE SECOND THE GAME STARTS
+	mov Bulletp11_X , 0Ah 			        ;current X position (column) of the first player bullet
+	mov Bulletp11_Y , 30d 			        ;current Y position (line) of the first player bullet
 	mov Bulletp12_X , 278d 					;current X position (column) of the second player bullet 
 	mov BulletP12_Y , 119D 					;current Y position (line) of the second player bullet
-
-	;TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-	;CHANGE THE BELOW CODE TO MAKE IT LOOK BETTER
-	;bellow comments FOR THE REST OF THIS PROCEDURE ONLY are not accurate and some are even RANDOM 
-	;Will add comments for the new code with the better looks
 
 
 	mov al, 03h  ;clear screen, set video mode to TEXT Mode 80x25 16 colours 8 pages 
 	mov ah, 0		
 	int 10h		 ;00 ah / 10h = TEXT Mode
 
-	 ;clear screen, blue pen grey background
+	 ;clear screen, PURPLE pen BLACK background
     MOV AX,0600H         	;ah = 6 (inturupt config)   and al = 0 to clear entire screan              
     MOV BH,00001101b				;set page number
     MOV CX,0000H			;colour atributes
@@ -2265,7 +2273,7 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
 	;set cursor location to middle of screen > el rakam el fel DL bta3 el X axis, wel fel DH bta3 el Y
     MOV AH,02H
     MOV BH,00
-    MOV DX,081BH   ; X axis = 17, Y = 8
+    MOV DX,081BH   ; X axis = 1b, Y = 8
     INT 10H    
 
 	cmp winner,2 ;check which player won to display appropriate String
@@ -2276,7 +2284,7 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0D1BH ; X axis = 17, Y = D
+    MOV DX,0D1BH ; X axis = 1b, Y = D
     INT 10H   
     ;print msg
     mov dx, Offset PressEnter ;get press enter string 
@@ -2297,7 +2305,7 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
     ;set cursor location to middle of screen
     MOV AH,02H
     MOV BH,00
-    MOV DX,0D1BH ; X axis = 17, Y = D
+    MOV DX,0D1BH ; X axis = 1b, Y = D
     INT 10H   
     ;print msg
     mov dx, Offset PressEnter 
@@ -2310,37 +2318,42 @@ GAME_OVER PROC NEAR  ; THE ONE AND ONLY GAME OVER PROTOCOL
     jne GetInputWin2
 
 Returnwinner:
-
 RET
 GAME_OVER ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;RESET Bullet Position Procedure
-;
+;ONE FOR MULTI SHOT
+;ONE FOR PLAYER 1 BULLET
+;ONE FOR PLAYER 2 BULLET
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;description
+;EVERY FRAME SETS MULTI BULLETS TO BLASTERS OF SHIPS
+;WITHOUT THIS STEP, BULLETS SHOOT FROM RANDOM POSITIONS, THIER INITIAL VALUE.
+;AS THIER INITIAL LOCATION AHS NOT BEEN UPDATED
+;THIS PROCEDURE UPDATES INITIAL POSITION TO THE BLASTER OF SHIPS
 RESET_Bullet_POSITION_Multi PROC
-	cmp IsMultiShotShot , 0
-	je GetReadyForMultiShot
+	cmp IsMultiShotShot , 0		;IF MULTISHOT IS NOT YET SHOT, SET LOCATION TO BLASTER OF MULISHOOTER , P1 OR P2
+	je GetReadyForMultiShot		;OTHERWISE, IF SHOT, RETURN WITHOUT RESETING
 	RET
-	GetReadyForMultiShot:
+	GetReadyForMultiShot:		
 	cmp MultiShooter,2
-	je SecondPlayer
-	MOV AX,PADDLE_LEFT_X
-	add AX,PADDLE_WIDTH 
-	mov Bulletp21_X, ax
+	je SecondPlayer				;IF MULTISHOOTER IS PLAYER 2, JUMP TO PLAYER 2
+	MOV AX,PADDLE_LEFT_X		;GET FIGHTER X POSITION
+	add AX,PADDLE_WIDTH 		;ADD WIDTH TO THAT POSITION 
+	mov Bulletp21_X, ax			;MOVE THAT VALUE TO X POSITION OF BOTH BULLETS
 	mov Bulletp22_X, ax
-	mov MULTISHOT_VELOCITYX1 , 4d
+	mov MULTISHOT_VELOCITYX1 , 4d	;SET MULTISHOT BULLET VELOCITY
 	mov MULTISHOT_VELOCITYX2 , 4d
-	MOV AX,PADDLE_LEFT_Y
-	add ax,19d			
-	mov Bulletp21_Y, ax
+	MOV AX,PADDLE_LEFT_Y			;GET Y LOCATION
+	add ax,19d						;ADD HALF FIGHTER HEIGHT
+	mov Bulletp21_Y, ax				;MOVE THAT LOCATION TO Y POSITION OF BOTH BULLETS
 	mov Bulletp22_Y, ax
-	mov MULTISHOT_VELOCITYY1 , 4d
+	mov MULTISHOT_VELOCITYY1 , 4d	;SET Y DIRECTION VELOCITY (THIS IS HOW BULLETS TRAVEL WITH AN ANGEL)
 	mov MULTISHOT_VELOCITYY2 , 4d
-	NEG MULTISHOT_VELOCITYY2
+	NEG MULTISHOT_VELOCITYY2		;BULLET 2 HAS NEGATIVE VELOCITY, GOES DOWNWARDS
 	RET
+	;SAME AS ABOVE BUT FOR PLAYER 2
 	SecondPlayer:
 	MOV AX,PADDLE_RIGHT_X 				
 	sub ax, BulletSize														 
@@ -2348,8 +2361,8 @@ RESET_Bullet_POSITION_Multi PROC
 	mov Bulletp22_X, ax
 	mov MULTISHOT_VELOCITYX1 , 4d
 	mov MULTISHOT_VELOCITYX2 , 4d
-	NEG MULTISHOT_VELOCITYX1
-	NEG MULTISHOT_VELOCITYX2
+	NEG MULTISHOT_VELOCITYX1	;NEGATIVE, GOES FROM RIGHT TO LEFT FOR PLAYER 2
+	NEG MULTISHOT_VELOCITYX2	;NEGATIVE, GOES FROM RIGHT TO LEFT FOR PLAYER 2
 	MOV AX,PADDLE_RIGHT_Y
 	add ax,19							
 	mov Bulletp21_Y, ax
@@ -2359,14 +2372,14 @@ RESET_Bullet_POSITION_Multi PROC
 	NEG MULTISHOT_VELOCITYY2		
 RET	
 RESET_Bullet_POSITION_Multi ENDP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;description
-RESET_Bullet_POSITION_Multi_AFTERSHOT PROC
-Mov IsMultiShotShot, 0
+RESET_Bullet_POSITION_Multi_AFTERSHOT PROC 	
+Mov IsMultiShotShot, 0 ;THIS ALLOWS THE PLAYER TO ONLY SHOOT ONE MULTISHOT 
 mov MultiShooter, 0
-
 RET	
 RESET_Bullet_POSITION_Multi_AFTERSHOT ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 RESET_Bullet_POSITION proc NEAR				;Procedure that might change later, for now resets bullet to blaster
 
    		MOV AX,PADDLE_LEFT_X
@@ -2375,11 +2388,10 @@ RESET_Bullet_POSITION proc NEAR				;Procedure that might change later, for now r
 		MOV AX,PADDLE_LEFT_Y
 		add ax,19							;make it shoot from center of fighter (height/2 - 1)
 		MOV Bulletp11_Y,AX 					;setting current Y-coordinate of the bullet to blasters of fighter1 
-		mov IsShot1 ,0
-											;EXIT PROCEDURE
-RET
+		mov IsShot1 ,0										
+RET											;EXIT PROCEDURE
 RESET_Bullet_POSITION ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;SAME AS ABOVE WITH MINOR TWEEKS (cuz of opposite directions)
 RESET_Bullet_POSITION2 proc NEAR
 
@@ -2397,7 +2409,7 @@ RET
 RESET_Bullet_POSITION2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;CLEAR SCREEN PROCEDURE : GENERAL PURPOSE
+;CLEAR SCREEN PROCEDURE : GENERAL PURPOSE, GO TO VIDEO MODE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	CLEAR_SCREEN PROC NEAR 				;procedure to clear the screen by restarting the video mode
@@ -2416,18 +2428,12 @@ RESET_Bullet_POSITION2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;GET PLAYER NAME (FIRST THING THE PLAYER SEES)
-;
-;TODO: MAKE IT LOOK BETTER
-;PRINT WELCOME MESSAGE WITH PLAYER NAME 
-;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;Procedure used to get player name
-
 ;;
 ;REFER TO CHOOSELEVEL PROCEDURE, PRINTING IN THE SAME EXACT WAY
 ;;
-
     GetPlayerName proc NEAR		
     MOV AX,0600H                  
     MOV BH,00001101b
@@ -2538,6 +2544,7 @@ RESET_Bullet_POSITION2 ENDP
     inc cx  
     JMP GetRestOfName	;repeat
     
+	;PHASE 3
 	;sequence used to put a dollar sign at the end of the name if it was shorter than 15 chars
 	;refer to variable in DATA SEGMENT, there is a dollar sign right after the name's 15 chars
 	; Dolla:
@@ -2556,21 +2563,16 @@ RESET_Bullet_POSITION2 ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;Following procedure used to draw the main menu and ask user which mode to play
-;TODO MAKE IT LOOK BETTER
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	MainMenu proc NEAR
 
-	mov winner,0 ;reset winner back to zero, TODO: further other variable resets need to be done
-
-	;TODO: Variable resets
-
-	;THE FOLLOWING IS VERY SIMILAR TO LEVEL SELECTION MENU, FURTHER IMPROVMENTS MUST BE DONE
-
+	mov winner,0 ;reset winner back to zero
+	;THE FOLLOWING IS VERY SIMILAR TO LEVEL SELECTION MENU
 	mov al, 03h	 ;go to text mode 
 	mov ah, 0
 	int 10h
- ;Clear entire screen and set new grey background and new words will be blue
+ ;Clear entire screen and set new BLACK background and new words will be PURPLE
     MOV AX,0600H                       
     MOV BH,00001101b
     MOV CX,0000H
